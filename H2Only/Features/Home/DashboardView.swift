@@ -16,11 +16,11 @@ struct DashboardView: View {
     
     var body: some View {
         ZStack {
-            HeaderView()
-            
             Color.white.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
+                    
+                    HeaderView()
                     // Header
                     AdviceView()
                     
@@ -61,8 +61,8 @@ struct DashboardView: View {
                                             .font(.caption)
                                             .foregroundColor(.gray)
                                     }
-                                    .padding(.top, 50)
-                                    .padding(.bottom,100)
+                                    .padding(.top, 100)
+                                    .padding(.bottom,75)
                                     // Nút cộng nước
                                     Button(action: {
                                         addWaterWithAnimation()
@@ -188,7 +188,7 @@ struct DashboardView: View {
         
         // Tạo hiệu ứng chữ bay
         let amount = viewModel.userProfile?.selectedCupSize ?? 125
-        let newFloatingText = FloatingTextData(amount: amount, position: CGPoint(x: 150, y: 220)) // Vị trí xuất phát (giữa vòng tròn)
+        let newFloatingText = FloatingTextData(amount: amount, position: CGPoint(x: 150, y: 150)) // Vị trí xuất phát (giữa vòng tròn)
         
         floatingTexts.append(newFloatingText)
         
@@ -297,15 +297,14 @@ struct HeaderView : View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Text("Nhắc nhở uống nước") // Tiêu đề
+                Text("Nhắc nhở uống nước")
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
                     .padding(.vertical, 15)
                 Spacer()
             }
-            .background(Color.blue)
-            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 5)
+            .background(Color.white)
             .zIndex(1)
         }
     }
@@ -320,74 +319,27 @@ struct FloatingTextData: Identifiable {
     var opacity: Double = 1.0
 }
 
-// Vẽ vòng cung tiến độ (Arc)
-struct CircleProgressView: View {
-    var progress: Double // 0.0 -> 1.0
-    
-    // Độ dày nét vẽ
-    let lineWidth: CGFloat = 7
-    let iconPadding : CGFloat = 15
-    
-    
-    var body: some View {
-        GeometryReader { proxy in
-            let size = proxy.size.width
-            let radius : CGFloat = size / -2
-            ZStack {
-                // 1. Vòng tròn mờ (Track) - Nửa vòng tròn
-                Circle()
-                    .trim(from: 0.0, to: 0.5)
-                    .stroke(Color.gray.opacity(0.2), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .rotationEffect(.degrees(180)) // Xoay lên trên
-                
-                // 2. Vòng tròn màu xanh (Progress)
-                Circle()
-                    .trim(from: 0.0, to: 0.0 + (0.5 * min(progress, 1.0))) // Max là 0.5 (một nửa)
-                    .stroke(Color.blue, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .rotationEffect(.degrees(180))
-                    .animation(.linear, value: progress)
-                
-                Image("ic_break_heart")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 25, height: 25)
-                    .offset(x: -(radius) , y: iconPadding)
-                
-                Image("ic_hydration")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 25, height: 25)
-                    .offset(x: radius , y: iconPadding)
-                
-                
-            }
-            
-            // Dịch chuyển toàn bộ view xuống 1 chút vì vẽ nửa trên thì tâm nó nằm ở đáy
-            .offset(y: size / 4)
-        }
-    }
-}
-
+// Thanh tiến trình
 struct HalfCircleProgressView: View {
-    var progress: Double // 0.0 -> 1.0
+    var progress: Double
     
     // Cấu hình giao diện
-    let lineWidth: CGFloat = 7    // Độ dày nét vẽ
-    let iconPadding: CGFloat = 20  // <--- Khoảng cách tách icon ra khỏi đầu mút
+    let lineWidth: CGFloat = 7
+    let iconPadding: CGFloat = 20
     
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size.width
-            let radius = size / 2 // Bán kính chuẩn
+            let radius = size / 2
             
             ZStack {
-                // 1. Nền mờ (Track) - Nửa vòng trên
+                // Nền mờ (Track) - Nửa vòng trên
                 Circle()
                     .trim(from: 0.0, to: 0.5)
                     .stroke(Color.gray.opacity(0.15), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .rotationEffect(.degrees(180)) // Úp ngược lên
                 
-                // 2. Thanh tiến độ (Blue)
+                // 2Thanh tiến độ (Blue)
                 Circle()
                     .trim(from: 0.0, to: 0.5 * min(progress, 1.0))
                     .stroke(Color.blue, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
