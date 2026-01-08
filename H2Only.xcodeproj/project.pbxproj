@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		959AF4452F0E64E000BDE50F /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 959AF4442F0E64E000BDE50F /* RealmSwift */; };
+		959AF44E2F0E663F00BDE50F /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 959AF44D2F0E663F00BDE50F /* Lottie */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		959AF42D2F0E5FE000BDE50F /* H2Only.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = H2Only.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				959AF4452F0E64E000BDE50F /* RealmSwift in Frameworks */,
+				959AF44E2F0E663F00BDE50F /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = H2Only;
 			packageProductDependencies = (
+				959AF4442F0E64E000BDE50F /* RealmSwift */,
+				959AF44D2F0E663F00BDE50F /* Lottie */,
 			);
 			productName = H2Only;
 			productReference = 959AF42D2F0E5FE000BDE50F /* H2Only.app */;
@@ -94,6 +103,10 @@
 			);
 			mainGroup = 959AF4242F0E5FDF00BDE50F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				959AF4412F0E64E000BDE50F /* XCRemoteSwiftPackageReference "realm-swift" */,
+				959AF44C2F0E663F00BDE50F /* XCRemoteSwiftPackageReference "lottie-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 959AF42E2F0E5FE000BDE50F /* Products */;
 			projectDirPath = "";
@@ -324,6 +337,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		959AF4412F0E64E000BDE50F /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.50.0;
+			};
+		};
+		959AF44C2F0E663F00BDE50F /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		959AF4442F0E64E000BDE50F /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 959AF4412F0E64E000BDE50F /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
+		};
+		959AF44D2F0E663F00BDE50F /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 959AF44C2F0E663F00BDE50F /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 959AF4252F0E5FDF00BDE50F /* Project object */;
 }
