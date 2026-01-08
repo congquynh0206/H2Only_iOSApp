@@ -15,15 +15,14 @@ struct H2OnlyApp: SwiftUI.App {
     
     var body: some Scene {
         WindowGroup {
-//            if let user = userProfiles.first, user.isOnboardingCompleted {
-//                MainTabView()
-//            } else {
+            if let user = userProfiles.first, user.isOnboardingCompleted {
+                MainTabView()
+            } else {
                 OnboardingView()
                     .onAppear {
-                        // Gọi hàm này để đảm bảo Realm tạo sẵn 1 user mặc định nếu chưa có
-                        _ = RealmManager.shared.getUserProfile()
+                        _ = RealmManager.shared.getUserProfile() // không cần dùng kết quả trả về
                     }
-//            }
+            }
         }
     }
 }

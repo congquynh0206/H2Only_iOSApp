@@ -12,9 +12,9 @@ struct WaterCalculator {
         
         let baseAmount : Double
         if gender == .male {
-            baseAmount = weightKg * 40.0
-        }else {
             baseAmount = weightKg * 35.0
+        }else {
+            baseAmount = weightKg * 30.0
         }
         return Int(baseAmount)
     }

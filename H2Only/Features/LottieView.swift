@@ -12,6 +12,7 @@ struct LottieView: UIViewRepresentable {
     var filename: String
     var loopMode: LottieLoopMode = .playOnce
     var contentMode: UIView.ContentMode = .scaleAspectFit
+    var toProgress: AnimationProgressTime? = nil
     
     func makeUIView(context: Context) -> some UIView {
         let view = UIView(frame: .zero)
@@ -22,8 +23,6 @@ struct LottieView: UIViewRepresentable {
         animationView.loopMode = loopMode
         animationView.backgroundBehavior = .pauseAndRestore // Giúp tiết kiệm pin khi app background
         
-        // Play animation
-        animationView.play()
         
         // Layout constraints
         animationView.translatesAutoresizingMaskIntoConstraints = false
@@ -33,6 +32,14 @@ struct LottieView: UIViewRepresentable {
             animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
             animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
         ])
+        // Logic play animation
+        if let toProgress = toProgress {
+            // Nếu có điểm dừng, chạy từ 0 đến điểm đó
+            animationView.play(fromProgress: 0, toProgress: toProgress, loopMode: loopMode, completion: nil)
+        } else {
+            // Chạy bình thường
+            animationView.play()
+        }
         
         return view
     }

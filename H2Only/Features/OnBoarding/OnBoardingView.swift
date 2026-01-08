@@ -20,17 +20,31 @@ struct OnboardingView: View {
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
+            if currentStep >= 4 {
+                LottieView(
+                    filename: "caculating",
+                    loopMode: .playOnce,
+                    contentMode: .scaleAspectFill,
+                    toProgress: 0.75
+                )
+                .ignoresSafeArea(.all)
+                .transition(.opacity)
+                .zIndex(0)
+            }
             
             VStack {
-                // Thanh tiến trình
-                OnboardingTopBar(
-                    currentStep: currentStep,
-                    gender: gender,
-                    weight: weight,
-                    wakeTime: wakeTime,
-                    bedTime: bedTime
-                )
-                .padding(.top, 10)
+                // Top bar
+                if currentStep < 4 {
+                    OnboardingTopBar(
+                        currentStep: currentStep,
+                        gender: gender,
+                        weight: weight,
+                        wakeTime: wakeTime,
+                        bedTime: bedTime
+                    )
+                    .padding(.top, 10)
+                    .transition(.move(edge: .top))
+                }
                 
                 Spacer()
                 
@@ -49,55 +63,70 @@ struct OnboardingView: View {
                         BedTimeView(bedTime: $bedTime, gender: gender)
                             .transition(transitionFor(step: 3))
                     }
+                    if currentStep == 4 {
+                        GeneratingContent(gender: gender)
+                            .transition(.opacity)
+                            .zIndex(1)
+                    } else if currentStep == 5 {
+                        ResultContent(gender: gender, weight: weight, onFinish: finishOnboarding)
+                            .transition(.opacity)
+                            .zIndex(1)
+                    }
+                    
                 }
                 .animation(.easeInOut(duration: 0.4), value: currentStep)
                 
                 Spacer()
                 
                 // Nút Back / Next
-                HStack {
-                    // Nút back
-                    if currentStep > 0 {
-                        Button(action: {
-                            isNext = false
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                withAnimation { currentStep -= 1 }
-                            }
-                        }) {
-                            Image("arrow_back")
-                                .foregroundColor(.white)
-                                .frame(width: 50, height: 50)
-                                .background(Color.blue)
-                                .clipShape(Circle())
-                        }
-                    } else {
-                        Spacer().frame(width: 50)
-                    }
-                    
-                    Spacer()
-                    
-                    // Nút Next
-                    Button(action: {
-                        isNext = true
-                        if currentStep < 3 {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                withAnimation { currentStep += 1 }
+                if currentStep < 4 {
+                    HStack {
+                        // Nút back
+                        if currentStep > 0 {
+                            Button(action: {
+                                isNext = false
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                    withAnimation { currentStep -= 1 }
+                                }
+                            }) {
+                                Image("arrow_back")
+                                    .foregroundColor(.white)
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.blue)
+                                    .clipShape(Circle())
                             }
                         } else {
-                            finishOnboarding()
+                            Spacer().frame(width: 50)
                         }
-                    }) {
-                        Text(currentStep == 3 ? "Finish" : "Next")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 15)
-                            .background(Color.blue)
-                            .cornerRadius(30)
+                        
+                        Spacer()
+                        
+                        // Nút Next
+                        Button(action: {
+                            isNext = true
+                            if currentStep < 3 {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                    withAnimation { currentStep += 1 }
+                                }
+                            } else {
+                                withAnimation { currentStep = 4 }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                    withAnimation { currentStep = 5 }
+                                }
+                            }
+                        }) {
+                            Text(currentStep == 3 ? "Finish" : "Next")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 40)
+                                .padding(.vertical, 15)
+                                .background(Color.blue)
+                                .cornerRadius(30)
+                        }
                     }
+                    .padding(.horizontal, 30)
+                    .padding(.bottom, 30)
                 }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 30)
             }
         }
         .preferredColorScheme(.light)
@@ -280,7 +309,7 @@ struct WeightView: View {
     @Binding var weight: Double
     var gender: Gender
     
-    // Biến trung gian Int để dùng cho Picker mượt hơn
+    // Biến trung gian Int để dùng cho Picker
     var weightInt: Binding<Int> {
         Binding<Int>(
             get: { Int(self.weight) },
@@ -374,6 +403,99 @@ struct BedTimeView: View {
                     .clipped()
             }
             Spacer()
+        }
+    }
+}
+
+// 4 - Tính toán
+struct GeneratingContent: View {
+    var gender: Gender
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer().frame(height: 150)
+            
+            Text("Generating your hydration plan...")
+                .font(.headline)
+                .foregroundColor(.black)
+            
+            Image(gender == .male ? "ic_male_anim" : "ic_female_anim")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                .clipShape(Circle())
+                .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 5)
+            
+            Spacer()
+        }
+    }
+}
+
+// 5 - Kết quả
+struct ResultContent: View {
+    var gender: Gender
+    var weight: Double
+    var onFinish: () -> Void
+    
+    var dailyGoal: Int {
+        WaterCalculator.calculateDailyGoal(weightKg: weight, gender: gender)
+    }
+    
+    var body: some View {
+        VStack {
+            // Header
+            HStack {
+                
+                Image(gender == .male ? "ic_male_anim" : "ic_female_anim")
+                    .resizable().frame(width: 30, height: 30)
+                    .clipShape(Circle())
+                    .background(Circle().fill(Color.white))
+                
+                Text("Personal hydration plan")
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+                    .shadow(radius: 2)
+                
+            }
+            .padding(.top, 50)
+            .padding(.horizontal,20)
+            
+            
+            Spacer()
+            
+            // Số liệu (Hiển thị to giữa màn hình)
+            VStack(spacing: 10) {
+                Text("Your proper daily water intake")
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .shadow(radius: 2)
+                    
+                
+                HStack(alignment: .firstTextBaseline) {
+                    Text("\(dailyGoal)")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(radius: 2)
+                    Text("ml")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .shadow(radius: 2)
+                }
+            }
+            
+            Spacer()
+            
+            // Nút Next
+            Button(action: onFinish) {
+                VStack {
+                    Text("NEXT ->")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.bottom, 5)
+                }
+                .padding(.bottom, 50)
+                .shadow(radius: 2)
+            }
         }
     }
 }
