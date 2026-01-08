@@ -12,6 +12,9 @@ import RealmSwift
 struct H2OnlyApp: SwiftUI.App {
     // Lắng nghe thay đổi của UserProfile từ Realm
     @ObservedResults(UserProfile.self) var userProfiles
+    init() {
+        _ = RealmManager.shared
+    }
     
     var body: some Scene {
         WindowGroup {

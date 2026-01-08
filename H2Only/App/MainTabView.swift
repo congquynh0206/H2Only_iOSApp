@@ -11,19 +11,19 @@ struct MainTabView: View {
         TabView {
             DashboardView()
                 .tabItem {
-                    Image(systemName: "drop.fill")
+                    Image("ic_home").renderingMode(.template)
                     Text("Trang chủ")
                 }
             
             Text("Màn hình Lịch sử (Đang làm)")
                 .tabItem {
-                    Image(systemName: "clock.arrow.circlepath")
+                    Image("ic_history").renderingMode(.template)
                     Text("Lịch sử")
                 }
             
             Text("Màn hình Cài đặt (Đang làm)")
                 .tabItem {
-                    Image(systemName: "gearshape.fill")
+                    Image("ic_setting").renderingMode(.template)
                     Text("Cài đặt")
                 }
         }
