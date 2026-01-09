@@ -63,7 +63,7 @@ struct OnboardingView: View {
                         BedTimeView(bedTime: $bedTime, gender: gender)
                             .transition(transitionFor(step: 3))
                     }
-                    if currentStep == 4 {
+                    else if currentStep == 4 {
                         GeneratingContent(gender: gender)
                             .transition(.opacity)
                             .zIndex(1)

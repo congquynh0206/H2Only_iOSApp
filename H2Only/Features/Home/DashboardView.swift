@@ -10,9 +10,23 @@ import RealmSwift
 
 struct DashboardView: View {
     @StateObject var viewModel = DashboardViewModel()
-    
     // Biến để quản lý hiệu ứng chữ bay
     @State private var floatingTexts: [FloatingTextData] = []
+    @State private var showChangeCupSheet = false
+    
+    var selectedCup: Int {
+        return viewModel.userProfile?.selectedCupSize ?? 0
+    }
+    let adviceList = [
+        "Không uống nước ngay sau khi ăn",
+        "Uống một ly nước từ từ với vài ngụm nhỏ",
+        "Uống nước ở tư thế ngồi tốt hơn tư thế đứng hoặc chạy",
+        "Luôn uống nước trước khi đi tiểu và không uống nước ngay sau khi đi tiểu",
+        "Ngậm nước trong miệng một lúc trước khi nuốt",
+        "Uống một ly nước từ từ với vài ngụm nhỏ"
+    ]
+    @State private var currentAdvice: String = "Không uống nước ngay sau khi ăn"
+    
     
     var body: some View {
         ZStack {
@@ -22,7 +36,7 @@ struct DashboardView: View {
                     
                     HeaderView()
                     // Header
-                    AdviceView()
+                    AdviceView(content: currentAdvice)
                     
                     Spacer().frame(height: 10)
                     VStack() {
@@ -37,8 +51,7 @@ struct DashboardView: View {
                             .offset(y: -80)
                             
                             ZStack {
-                                // Ảnh nền (Nhỏ hơn vòng cung -> Frame 280)
-                                Image("bg_circle") // Đảm bảo ảnh này là hình tròn
+                                Image("bg_circle")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 280, height: 280)
@@ -62,17 +75,18 @@ struct DashboardView: View {
                                             .foregroundColor(.gray)
                                     }
                                     .padding(.top, 100)
-                                    .padding(.bottom,75)
+                                    .padding(.bottom,50)
                                     // Nút cộng nước
                                     Button(action: {
                                         addWaterWithAnimation()
                                     }) {
                                         VStack(spacing: 5) {
                                             Text("\(viewModel.userProfile?.selectedCupSize ?? 125) ml")
+                                            
                                                 .font(.system(size: 14, weight: .bold))
                                                 .foregroundColor(.black)
                                             
-                                            Image("ic_cup_100ml_add") // Icon cốc có dấu +
+                                            Image(viewModel.getCurrentIconName(postFix: "add"))
                                                 .resizable()
                                                 .scaledToFit()
                                                 .frame(width: 50, height: 50)
@@ -89,22 +103,23 @@ struct DashboardView: View {
                                 HStack {
                                     Spacer()
                                     Button(action: {
-                                        print("Đổi dung tích")
+                                        showChangeCupSheet = true
                                     }) {
-                                        ZStack {
+                                        ZStack (){
                                             Image("ic_change")
                                                 .resizable()
                                                 .scaledToFit()
                                                 .frame(width: 60, height: 60)
                                                 .shadow(radius: 12)
-                                            Image("ic_cup_customize_selected")
+                                            Image(viewModel.getCurrentIconName(postFix: "selected"))
                                                 .resizable()
                                                 .scaledToFit()
                                                 .frame(width: 20, height: 20)
+                                                .offset(x: -3)
                                             
                                         }
                                     }
-                                    .offset(x: 5, y: -30) // Chỉnh vị trí
+                                    .offset(x: 10, y: -30) // Chỉnh vị trí
                                 }
                             }
                             .frame(width: 320, height: 320)
@@ -112,7 +127,7 @@ struct DashboardView: View {
                         }
                         
                         
-                    } // End VStack Khu vực trung tâm
+                    }
                     
                     // Hiệu ứng chữ bay
                     .overlay(
@@ -147,36 +162,47 @@ struct DashboardView: View {
                             .padding(.horizontal)
                             .foregroundStyle(.black)
                         VStack(spacing: 0) {
-                            // Mục Lần tới (Static)
-                            HStack(alignment: .top) {
-                                VStack {
-                                    Image("ic_next_time")
-                                        .foregroundColor(.gray)
-                                    Image("line_graps")
-                                        .resizable()
-                                        .frame(width: 2, height: 30)
-                                }
-                                .frame(width: 30)
-                                
-                                VStack(alignment: .leading) {
-                                    Text("10:20") // Giờ giả định
-                                        .font(.system(size: 16, weight: .bold))
-                                    Text("Lần tới")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
-                                Spacer()
-                                Text("125 ml").foregroundColor(.gray)
-                            }
-                            .padding(.horizontal, 20)
+//                            HStack(alignment: .top) {
+//                                VStack {
+//                                    Image("ic_next_time")
+//                                        .frame(width: 50,height: 50)
+//                                    Image("line_graps")
+//                                        .resizable()
+//                                        .frame(width: 2, height: 40)
+//                                        .offset(x:-4)
+//                                }
+//                                .frame(width: 30)
+//                                
+//                                VStack(alignment: .leading) {
+//                                    Text("10:20") // Giờ giả định
+//                                        .font(.system(size: 16, weight: .bold))
+//                                    Text("Lần tới")
+//                                        .font(.caption)
+//                                        .foregroundColor(.gray)
+//                                }
+//                                Spacer()
+//                                Text("125 ml").foregroundColor(.gray)
+//                            }
+//                            .padding(.horizontal, 7)
                             
                             // Danh sách đã uống (Lấy từ Realm)
                             ForEach(viewModel.todayLogs) { log in
                                 HistoryRow(log: log)
                             }
                         }
+                        .padding(.vertical, 10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 10)
+                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
                     }.padding(20)
                 }
+            }
+            .sheet(isPresented: $showChangeCupSheet) {
+                ChangeCupSheet(viewModel: viewModel)
+                    .presentationDetents([.medium, .large]) // Cho phép kéo nửa màn hình hoặc full
             }
         }
     }
@@ -191,6 +217,10 @@ struct DashboardView: View {
         let newFloatingText = FloatingTextData(amount: amount, position: CGPoint(x: 150, y: 150)) // Vị trí xuất phát (giữa vòng tròn)
         
         floatingTexts.append(newFloatingText)
+        
+        withAnimation{
+            currentAdvice = adviceList.randomElement() ?? adviceList[0]
+        }
         
         // Animation bay lên
         if let index = floatingTexts.firstIndex(where: { $0.id == newFloatingText.id }) {
@@ -213,13 +243,14 @@ struct HistoryRow: View {
     
     var body: some View {
         HStack(alignment: .top) {
-            VStack {
-                Image("ic_cup_125ml_selected")
-                    .font(.system(size: 12))
+            VStack (alignment: .center){
+                Image(log.iconName)
+                    .frame(width: 50,height: 50)
                 
                 Image("line_graps")
                     .resizable()
-                    .frame(width: 2, height: 30)
+                    .frame(width: 2, height: 40)
+                    .offset(x: -4)
             }
             .frame(width: 30)
             
@@ -251,6 +282,8 @@ struct HistoryRow: View {
 // Subview: Header
 struct AdviceView: View {
     @State private var showAdvice = false
+    var content : String
+    
     var body: some View {
         HStack(alignment: .top) {
             Image("ic_character_home")
@@ -258,14 +291,22 @@ struct AdviceView: View {
                 .scaledToFit()
                 .frame(width: 60, height: 60)
             
-            // Bong bóng chat
-            Text("Không uống nước lạnh ngay sau khi ăn/uống những thứ nóng...")
-                .font(.caption)
-                .padding()
-                .foregroundStyle(.black)
-                .background(Color.blue.opacity(0.6))
-                .cornerRadius(12)
-            
+            HStack{
+                Image("ic_triangle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 15, height: 15)
+                    .offset(x: 11, y: -15)
+                // Bong bóng chat
+                Text(content)
+                    .font(.caption)
+                    .padding()
+                    .foregroundStyle(.black)
+                    .background(Color.blue.opacity(0.1))
+                    .id(content)
+                    .cornerRadius(12)
+            }
+            .offset(x: -15)
             Spacer()
             
             Button(action: {

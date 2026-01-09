@@ -26,7 +26,9 @@ class UserProfile: Object, ObjectKeyIdentifiable {
     @Persisted var volumeUnit: VolumeUnit = .ml // Cài đặt hiển thị ml hay oz
     @Persisted var weightUnit: WeightUnit = .kg // Cài đặt hiển thị kg hay lbs
     
-    // --- 4. Cài đặt Nhắc nhở ---
+    // Cài đặt Nhắc nhở
     @Persisted var isReminderEnabled: Bool = true
     @Persisted var reminderInterval: Int = 60   // Nhắc mỗi bao nhiêu phút
+    
+    @Persisted var cups = List<Cup>()
 }
