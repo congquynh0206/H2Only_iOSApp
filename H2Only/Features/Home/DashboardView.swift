@@ -162,28 +162,28 @@ struct DashboardView: View {
                             .padding(.horizontal)
                             .foregroundStyle(.black)
                         VStack(spacing: 0) {
-//                            HStack(alignment: .top) {
-//                                VStack {
-//                                    Image("ic_next_time")
-//                                        .frame(width: 50,height: 50)
-//                                    Image("line_graps")
-//                                        .resizable()
-//                                        .frame(width: 2, height: 40)
-//                                        .offset(x:-4)
-//                                }
-//                                .frame(width: 30)
-//                                
-//                                VStack(alignment: .leading) {
-//                                    Text("10:20") // Giờ giả định
-//                                        .font(.system(size: 16, weight: .bold))
-//                                    Text("Lần tới")
-//                                        .font(.caption)
-//                                        .foregroundColor(.gray)
-//                                }
-//                                Spacer()
-//                                Text("125 ml").foregroundColor(.gray)
-//                            }
-//                            .padding(.horizontal, 7)
+                            //                            HStack(alignment: .top) {
+                            //                                VStack {
+                            //                                    Image("ic_next_time")
+                            //                                        .frame(width: 50,height: 50)
+                            //                                    Image("line_graps")
+                            //                                        .resizable()
+                            //                                        .frame(width: 2, height: 40)
+                            //                                        .offset(x:-4)
+                            //                                }
+                            //                                .frame(width: 30)
+                            //
+                            //                                VStack(alignment: .leading) {
+                            //                                    Text("10:20") // Giờ giả định
+                            //                                        .font(.system(size: 16, weight: .bold))
+                            //                                    Text("Lần tới")
+                            //                                        .font(.caption)
+                            //                                        .foregroundColor(.gray)
+                            //                                }
+                            //                                Spacer()
+                            //                                Text("125 ml").foregroundColor(.gray)
+                            //                            }
+                            //                            .padding(.horizontal, 7)
                             
                             // Danh sách đã uống (Lấy từ Realm)
                             ForEach(viewModel.todayLogs) { log in
@@ -200,9 +200,19 @@ struct DashboardView: View {
                     }.padding(20)
                 }
             }
-            .sheet(isPresented: $showChangeCupSheet) {
-                ChangeCupSheet(viewModel: viewModel)
-                    .presentationDetents([.medium, .large]) // Cho phép kéo nửa màn hình hoặc full
+            .fullScreenCover(isPresented: $showChangeCupSheet) {
+                ZStack {
+                    // Lớp nền mờ tối
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showChangeCupSheet = false
+                        }
+                    
+                    // Popup nội dung
+                    ChangeCupPopup(viewModel: viewModel, isPresented: $showChangeCupSheet)
+                }
+                .presentationBackground(.clear)
             }
         }
     }

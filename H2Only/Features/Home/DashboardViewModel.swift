@@ -124,6 +124,7 @@ class DashboardViewModel: ObservableObject {
         newCup.iconName = "ic_cup_customize"
         newCup.isDefault = false
         
+        selectCup(amount)
         // Lưu vào Realm và Set làm cốc đang chọn
         try? RealmManager.shared.realm?.write {
             user.cups.append(newCup)
@@ -131,12 +132,32 @@ class DashboardViewModel: ObservableObject {
         }
     }
     
+    // Chọn cốc
     func selectCup(_ amount: Int) {
         guard let user = userProfile else { return }
-        try? RealmManager.shared.realm?.write {
-            user.selectedCupSize = amount
-            print("thay đổi trong db: \(amount)")
+        let realm = RealmManager.shared.realm
+        
+        // Sửa DB
+        try? realm?.write {
+            // Reset tất cả để tắt trạng thai selected di
+            for cup in user.cups {
+                if cup.iconName.contains("_selected") || cup.iconName.contains("_add") {
+                    cup.iconName = cup.iconName
+                        .replacingOccurrences(of: "_selected", with: "_normal")
+                        .replacingOccurrences(of: "_add", with: "_normal")
+                }
+            }
+            
+            // Tìm cái cốc mới được chọn và đổi nó thành _selected
+            if let newCup = user.cups.filter("amount == %@", amount).first {
+                user.selectedCupSize = amount // Lưu dung tích mới
+                
+                // Đổi tên
+                newCup.iconName = newCup.iconName.replacingOccurrences(of: "_normal", with: "_selected")
+            }
         }
+        //Bắt buộc View vẽ lại
+        self.objectWillChange.send()
     }
 
     
