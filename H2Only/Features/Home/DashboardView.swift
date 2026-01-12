@@ -220,18 +220,15 @@ struct HistoryList : View {
             VStack(spacing: 0) {
                 
                 // Danh sách đã uống (Lấy từ Realm)
-                ForEach(viewModel.todayLogs.indices , id: \.self){index in
-                    if index < viewModel.todayLogs.count{
-                        
-                        let log = viewModel.todayLogs[index]
-                        let isLast = index == viewModel.todayLogs.count - 1
-                        
-                        HistoryRow(log: log, isLastRow: isLast, onDelete : {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                viewModel.deleteLog(log)
-                            }
-                        }).transition(.move(edge: .top).combined(with: .opacity))
-                    }
+                ForEach(Array(viewModel.todayLogs.enumerated()), id: \.element.id) {index, log in
+                    
+                    let isLast = index == viewModel.todayLogs.count - 1
+                    
+                    HistoryRow(log: log, isLastRow: isLast, onDelete : {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.deleteLog(log)
+                        }
+                    }).transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
             .padding(.vertical, 10)
@@ -241,7 +238,7 @@ struct HistoryList : View {
             )
             .padding(.horizontal, 10)
         }
-        .animation(.easeInOut(duration: 0.5), value: viewModel.todayLogs.count)
+        .animation(.easeInOut(duration: 1.0), value: viewModel.todayLogs.count)
         .padding(10)
     }
 }
@@ -259,17 +256,12 @@ struct HistoryRow: View {
         VStack{
             HStack(alignment: .top, spacing: 12){
                 VStack(spacing: 0){
-                    if log.iconName.contains("400ml") || log.iconName.contains("500ml") {
-                        Image(log.iconName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 25, height: 30)
-                    }else{
-                        Image(log.iconName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 25, height: 25)
-                    }
+                    let isBigIcon = log.iconName.contains("400ml") || log.iconName.contains("500ml")
+                    
+                    Image(log.iconName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25, height: isBigIcon ? 30 : 25)
                     
                     if !isLastRow {
                         Image("line_graps")
@@ -337,20 +329,33 @@ struct AdviceView: View {
                 .scaledToFit()
                 .frame(width: 60, height: 60)
             
-            HStack{
+            HStack(){
                 Image("ic_triangle")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 15, height: 15)
-                    .offset(x: 11, y: -15)
+                    .offset(x: 10, y: -15)
                 // Bong bóng chat
-                Text(content)
-                    .font(.caption)
-                    .padding()
-                    .foregroundStyle(.black)
-                    .background(Color.blue.opacity(0.1))
-                    .id(content)
-                    .cornerRadius(12)
+                ZStack {
+                    Text("\n\n")
+                        .font(.caption)
+                        .padding()
+                        .opacity(0) // Ẩn
+                    
+                    // Nội dung thật
+                    Text(content)
+                        .font(.caption)
+                        .padding()
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                .frame(maxWidth: .infinity, alignment: .leading) // Cho phép giãn ngang
+                .foregroundStyle(.black)
+                .background(Color.blue.opacity(0.15))
+                .cornerRadius(12)
+                 .id(content)
+                    
             }
             .offset(x: -15)
             Spacer()
