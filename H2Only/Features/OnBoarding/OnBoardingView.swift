@@ -65,7 +65,8 @@ struct OnboardingView: View {
                     }
                     else if currentStep == 4 {
                         GeneratingContent(gender: gender)
-                            .transition(.opacity)
+//                            .transition(.opacity)
+                                .transition(transitionFor(step: 4))
                             .zIndex(1)
                     } else if currentStep == 5 {
                         ResultContent(gender: gender, weight: weight, onFinish: finishOnboarding)
