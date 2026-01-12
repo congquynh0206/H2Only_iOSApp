@@ -12,19 +12,17 @@ struct LottieView: UIViewRepresentable {
     var filename: String
     var loopMode: LottieLoopMode = .playOnce
     var contentMode: UIView.ContentMode = .scaleAspectFit
-    var toProgress: AnimationProgressTime? = nil
     
-    func makeUIView(context: Context) -> some UIView {
+    var toProgress: CGFloat? = nil
+    
+    func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: .zero)
         
-        // Setup Animation View
         let animationView = LottieAnimationView(name: filename)
         animationView.contentMode = contentMode
         animationView.loopMode = loopMode
-        animationView.backgroundBehavior = .pauseAndRestore // Giúp tiết kiệm pin khi app background
+        animationView.backgroundBehavior = .pauseAndRestore
         
-        
-        // Layout constraints
         animationView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationView)
         
@@ -32,19 +30,26 @@ struct LottieView: UIViewRepresentable {
             animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
             animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
         ])
-        // Logic play animation
+        
+        // Chạy lần đầu tiên
         if let toProgress = toProgress {
-            // Nếu có điểm dừng, chạy từ 0 đến điểm đó
-            animationView.play(fromProgress: 0, toProgress: toProgress, loopMode: loopMode, completion: nil)
+             // Chạy ngay đến điểm cần đến
+            animationView.play(toProgress: toProgress, loopMode: loopMode)
         } else {
-            // Chạy bình thường
             animationView.play()
         }
         
         return view
     }
     
-    func updateUIView(_ uiView: UIViewType, context: Context) {
-        // Có thể xử lý logic update animation tại đây nếu cần (ví dụ đổi progress theo lượng nước)
+    func updateUIView(_ uiView: UIView, context: Context) {
+        guard let animationView = uiView.subviews.first(where: { $0 is LottieAnimationView }) as? LottieAnimationView else { return }
+        
+        // Kiểm tra xem có lệnh thay đổi mức nước không
+        if let targetProgress = toProgress {
+            // Chạy từ vị trí hiện tại đến targetProgress
+            animationView.play(toProgress: targetProgress, loopMode: loopMode)
+        }
     }
 }
+

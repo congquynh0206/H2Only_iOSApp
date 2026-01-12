@@ -13,4 +13,5 @@ class WaterLog: Object, ObjectKeyIdentifiable {
     @Persisted var amount: Int = 0
     @Persisted var date: Date = Date()
     @Persisted var iconName: String = "ic_cup_125ml_selected"
+    @Persisted var cupSize: Int = 0
 }

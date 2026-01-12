@@ -32,7 +32,7 @@ class DashboardViewModel: ObservableObject {
                 if user.cups.isEmpty {
                     self.createDefaultCups(for: user)
                     try? RealmManager.shared.realm?.write{
-                        user.selectedCupSize = 125
+                        user.selectedCupSize = 100
                     }
                 }
             }
@@ -72,6 +72,7 @@ class DashboardViewModel: ObservableObject {
         let newLog = WaterLog()
         newLog.amount = amount
         newLog.date = Date()
+        newLog.cupSize = user.selectedCupSize
         newLog.iconName = getIconName(for: user.selectedCupSize, postFix: "selected")
         
         RealmManager.shared.add(newLog)
@@ -95,6 +96,7 @@ class DashboardViewModel: ObservableObject {
     // Tạo các cốc default
     func createDefaultCups(for user: UserProfile) {
         let defaultCups = [// Bỏ _normal
+            Cup(amount: 100, iconName: "ic_cup_100ml", isDefault: true),
             Cup(amount: 125, iconName: "ic_cup_125ml", isDefault: true),
             Cup(amount: 150, iconName: "ic_cup_150ml", isDefault: true),
             Cup(amount: 175, iconName: "ic_cup_175ml", isDefault: true),

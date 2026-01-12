@@ -13,6 +13,10 @@ struct DashboardView: View {
     
     @StateObject var viewModel = DashboardViewModel()
     @State private var showChangeCupSheet = false
+    @State private var showChangeHistory = false
+    
+    @State private var selectedLog: WaterLog?
+    
     @State var currentAdvice: String = "Không uống nước ngay sau khi ăn"
     
     var body: some View {
@@ -37,7 +41,7 @@ struct DashboardView: View {
                             .frame(width: 320, height: 320)
                             .offset(y: -80)
                             
-                            WaterCircle(viewModel: viewModel, currentAdvice: $currentAdvice)
+                            WaterCircle(viewModel: viewModel, currentAdvice: $currentAdvice, currentIntake: viewModel.currentIntake)
                             
                             // Nút đổi dung tích
                             VStack {
@@ -71,7 +75,10 @@ struct DashboardView: View {
                     
                     Spacer()
                     // Lịch sử
-                    HistoryList (viewModel: viewModel)
+                    HistoryList(viewModel: viewModel, onEdit: { selectedLog in
+                        self.selectedLog = selectedLog
+                        self.showChangeHistory = true
+                    })
                 }
             }
             .fullScreenCover(isPresented: $showChangeCupSheet) {
@@ -88,6 +95,23 @@ struct DashboardView: View {
                 }
                 .presentationBackground(.clear)
             }
+            .fullScreenCover(item: $selectedLog) { logItem in
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            selectedLog = nil
+                        }
+                    ChangeHistory(
+                        isPresented: Binding(
+                            get: { selectedLog != nil },
+                            set: { if !$0 { selectedLog = nil } }
+                        ),
+                        log: logItem 
+                    )
+                }
+                .presentationBackground(.clear)
+            }
         }
     }
 }
@@ -99,6 +123,7 @@ struct WaterCircle : View {
     @ObservedObject var viewModel : DashboardViewModel
     @State private var floatingTexts: [FloatingTextData] = []
     @Binding var currentAdvice: String
+    var currentIntake: Int
     
     var selectedCup: Int {
         return viewModel.userProfile?.selectedCupSize ?? 0
@@ -119,7 +144,7 @@ struct WaterCircle : View {
                     // Số ml uống / Mục tiêu
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
                         
-                        CountingText(value: Double(viewModel.currentIntake), color: .blue, size: 20, weight: .medium)
+                        CountingText(value: Double(currentIntake), color: .blue, size: 20, weight: .medium)
                             .animation(.linear(duration: 0.5), value: viewModel.currentIntake)
                         
                         Text("/\(viewModel.dailyGoal) ml")
@@ -138,7 +163,7 @@ struct WaterCircle : View {
                     addWaterWithAnimation()
                 }) {
                     VStack(spacing: 5) {
-                        Text("\(viewModel.userProfile?.selectedCupSize ?? 125) ml")
+                        Text("\(viewModel.userProfile?.selectedCupSize ?? 100) ml")
                         
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.black)
@@ -211,6 +236,8 @@ struct WaterCircle : View {
 // Lịch sử uống nc
 struct HistoryList : View {
     @ObservedObject var viewModel : DashboardViewModel
+    var onEdit: (WaterLog) -> Void
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Hồ sơ hôm nay")
@@ -228,6 +255,8 @@ struct HistoryList : View {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             viewModel.deleteLog(log)
                         }
+                    },onEdit : {
+                        onEdit(log)
                     }).transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
@@ -250,6 +279,7 @@ struct HistoryRow: View {
     var log: WaterLog
     var isLastRow : Bool
     var onDelete : () -> Void
+    var onEdit : () -> Void
     
     var body: some View {
         
@@ -270,7 +300,7 @@ struct HistoryRow: View {
                     }
                 }.frame(width: 30)
                 HStack{
-                    Text(formatTime(log.date))
+                    Text(DateFormat.formatTime(log.date))
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.black)
                     
@@ -282,7 +312,7 @@ struct HistoryRow: View {
                     Menu{
                         // Sửa
                         Button(action: {
-                            print("Chưa làm sửa")
+                            onEdit()
                         }) {
                             Text("Chỉnh sửa")
                                 .foregroundStyle(.textSecondary)
@@ -308,12 +338,6 @@ struct HistoryRow: View {
         }
         .padding(.horizontal, 20)
         
-    }
-    
-    func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
     }
 }
 

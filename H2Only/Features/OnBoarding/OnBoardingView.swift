@@ -43,7 +43,7 @@ struct OnboardingView: View {
                         bedTime: bedTime
                     )
                     .padding(.top, 10)
-                    .transition(.move(edge: .top))
+//                    .transition(.move(edge: .top))
                 }
                 
                 Spacer()
