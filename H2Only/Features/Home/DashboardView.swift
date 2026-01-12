@@ -9,6 +9,8 @@ import SwiftUI
 import RealmSwift
 
 struct DashboardView: View {
+    @ObservedResults(WaterLog.self) var logs
+    
     @StateObject var viewModel = DashboardViewModel()
     @State private var showChangeCupSheet = false
     @State var currentAdvice: String = "Không uống nước ngay sau khi ăn"
@@ -116,9 +118,10 @@ struct WaterCircle : View {
                 VStack(spacing: 5) {
                     // Số ml uống / Mục tiêu
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text("\(viewModel.currentIntake)")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.blue)
+                        
+                        CountingText(value: Double(viewModel.currentIntake), color: .blue, size: 20, weight: .medium)
+                            .animation(.linear(duration: 0.5), value: viewModel.currentIntake)
+                        
                         Text("/\(viewModel.dailyGoal) ml")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(.gray)
@@ -143,7 +146,7 @@ struct WaterCircle : View {
                         Image(viewModel.getCurrentIconName(postFix: "add"))
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 30, height: 30)
+                            .frame(width: 40, height: 40)
                     }
                 }
                 .padding(.bottom, 20)
@@ -176,8 +179,8 @@ struct WaterCircle : View {
     }
     // Logic thêm nước + Hiệu ứng
     func addWaterWithAnimation() {
-        // Thêm vào DB
         viewModel.addWater()
+        
         
         // Tạo hiệu ứng chữ bay
         let amount = viewModel.userProfile?.selectedCupSize ?? 125
@@ -218,9 +221,17 @@ struct HistoryList : View {
                 
                 // Danh sách đã uống (Lấy từ Realm)
                 ForEach(viewModel.todayLogs.indices , id: \.self){index in
-                    let log = viewModel.todayLogs[index]
-                    let isLast = index == viewModel.todayLogs.count - 1
-                    HistoryRow(log: log, isLastRow: isLast)
+                    if index < viewModel.todayLogs.count{
+                        
+                        let log = viewModel.todayLogs[index]
+                        let isLast = index == viewModel.todayLogs.count - 1
+                        
+                        HistoryRow(log: log, isLastRow: isLast, onDelete : {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                viewModel.deleteLog(log)
+                            }
+                        }).transition(.move(edge: .top).combined(with: .opacity))
+                    }
                 }
             }
             .padding(.vertical, 10)
@@ -230,6 +241,7 @@ struct HistoryList : View {
             )
             .padding(.horizontal, 10)
         }
+        .animation(.easeInOut(duration: 0.5), value: viewModel.todayLogs.count)
         .padding(10)
     }
 }
@@ -240,6 +252,7 @@ struct HistoryList : View {
 struct HistoryRow: View {
     var log: WaterLog
     var isLastRow : Bool
+    var onDelete : () -> Void
     
     var body: some View {
         
@@ -272,12 +285,30 @@ struct HistoryRow: View {
                     Spacer()
                     
                     Text("\(log.amount) ml")
-                        .foregroundColor(.gray)
+                        .foregroundColor(.textSecondary)
                     
-                    // Dấu 3 chấm
-                    Button(action: {}) {
+                    Menu{
+                        // Sửa
+                        Button(action: {
+                            print("Chưa làm sửa")
+                        }) {
+                            Text("Chỉnh sửa")
+                                .foregroundStyle(.textSecondary)
+                        }
+                        
+                        // Xoá
+                        Button(action: {
+                            onDelete()
+                        }) {
+                            Text("Xoá bỏ")
+                                .foregroundStyle(.textSecondary)
+                        }
+                    }label: {
                         Image("ic_more_options")
                             .foregroundColor(.gray)
+                            .frame(width: 20, height: 20)
+                            .contentShape(Rectangle())
+                        
                     }
                 }
                 .frame(height: 30)

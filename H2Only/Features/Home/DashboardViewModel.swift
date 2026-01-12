@@ -75,6 +75,7 @@ class DashboardViewModel: ObservableObject {
         newLog.iconName = getIconName(for: user.selectedCupSize, postFix: "selected")
         
         RealmManager.shared.add(newLog)
+        self.objectWillChange.send()
     }
     func getIconName(for amount: Int, postFix : String) -> String {
         switch amount {
@@ -109,6 +110,7 @@ class DashboardViewModel: ObservableObject {
         }
     }
     
+    // Tạo cốc riêng
     func addCustomCup(amount: Int) {
         guard let user = userProfile else { return }
         // Kiểm tra xem cốc có chưa
@@ -148,7 +150,7 @@ class DashboardViewModel: ObservableObject {
                 }
             }
             
-            // Tìm cái cốc mới được chọn và đổi nó thành _selected
+            // Tìm cái cốc mới được chọn và đổi nó thành
             if let newCup = user.cups.filter("amount == %@", amount).first {
                 user.selectedCupSize = amount // Lưu dung tích mới
                 
@@ -164,6 +166,20 @@ class DashboardViewModel: ObservableObject {
     
     // Hàm xoá
     func deleteLog(_ log: WaterLog) {
-       
+        guard let realm = RealmManager.shared.realm else {return}
+        
+        do {
+            try realm.write{
+                if !log.isInvalidated{
+                    print("Đã xoá water log: \(log.amount)")
+                    realm.delete(log)
+                    //Bắt buộc View vẽ lại
+                    self.objectWillChange.send()
+                }
+            }
+        }catch{
+            print("Lỗi xoá water log: \(error)")
+        }
     }
+    
 }
