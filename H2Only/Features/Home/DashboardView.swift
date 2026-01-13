@@ -192,10 +192,10 @@ struct WaterCircle : View {
         .overlay(
             ZStack {
                 ForEach(floatingTexts) { data in
-                    Text("+ \(data.amount) ml! Tốt lắm")
+                    Text(data.message)
                         .font(.title3)
                         .fontWeight(.bold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(data.message.contains("ml") ? .blue : .orange)
                         .position(x: data.position.x, y: data.position.y)
                         .opacity(data.opacity)
                 }
@@ -205,11 +205,39 @@ struct WaterCircle : View {
     // Logic thêm nước + Hiệu ứng
     func addWaterWithAnimation() {
         viewModel.addWater()
+        let newAmount = viewModel.userProfile?.selectedCupSize ?? 100
+        let subMess = Constants.compliments.randomElement() ?? "Tốt lắm"
+        var message = "+ \(newAmount) ml! \(subMess)"
+        
+        // 15p
+        let time : TimeInterval = 15 * 60
+        //Ngưỡng cảnh báo
+        let warningThresold = 600
+        
+        // Thời gian bắt đầu
+        
+        let windowStartTime = Date().addingTimeInterval(-time)
+        
+        // Lọc log từ 15p trước
+        let recentLogTotal = viewModel.todayLogs
+            .filter { log in
+                return log.date >= windowStartTime
+            }
+            .reduce(0){sum,log in
+                return sum + log.amount
+            }
+        // tổng cả trước với hiện tại
+        let totalIntakeInWindow = recentLogTotal + newAmount
+        
+        if totalIntakeInWindow > warningThresold {
+            // Random câu cảnh báo cho đỡ nhàm chán
+            message = Constants.warnings.randomElement() ?? "Chậm lại nào!"
+        }
         
         
         // Tạo hiệu ứng chữ bay
         let amount = viewModel.userProfile?.selectedCupSize ?? 125
-        let newFloatingText = FloatingTextData(amount: amount, position: CGPoint(x: 150, y: 150)) // Vị trí xuất phát (giữa vòng tròn)
+        let newFloatingText = FloatingTextData(amount: amount, position: CGPoint(x: 150, y: 150),message:  message) // Vị trí xuất phát
         
         floatingTexts.append(newFloatingText)
         
@@ -219,7 +247,7 @@ struct WaterCircle : View {
         
         // Animation bay lên
         if let index = floatingTexts.firstIndex(where: { $0.id == newFloatingText.id }) {
-            withAnimation(.easeOut(duration: 1.0)) {
+            withAnimation(.easeOut(duration: 2.0)) {
                 floatingTexts[index].position.y -= 100 // Bay lên 100pt
                 floatingTexts[index].opacity = 0 // Mờ dần
             }
@@ -427,12 +455,14 @@ struct HeaderView : View {
 }
 
 
+
 // Struct hỗ trợ Animation
 struct FloatingTextData: Identifiable {
     let id = UUID()
     var amount: Int
     var position: CGPoint
     var opacity: Double = 1.0
+    var message : String
 }
 
 // Thanh tiến trình

@@ -113,6 +113,8 @@ struct ChangeHistory : View {
         }
     }
     
+    
+    // Lấy file json tương ứng với tên cốc
     private func getJsonName (_ name : String) -> String{
         if name.contains("100"){
             return "100"
