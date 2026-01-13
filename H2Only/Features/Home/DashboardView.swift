@@ -229,7 +229,10 @@ struct WaterCircle : View {
         // tổng cả trước với hiện tại
         let totalIntakeInWindow = recentLogTotal + newAmount
         
-        if totalIntakeInWindow > warningThresold {
+        if viewModel.currentIntake >= viewModel.dailyGoal {
+            message =  Constants.finish.randomElement() ?? "Hôm nay đã uống đủ nước, dừng lại thôi!"
+            
+        }else if totalIntakeInWindow > warningThresold {
             // Random câu cảnh báo cho đỡ nhàm chán
             message = Constants.warnings.randomElement() ?? "Chậm lại nào!"
         }

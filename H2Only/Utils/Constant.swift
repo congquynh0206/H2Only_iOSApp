@@ -38,4 +38,15 @@ struct Constants {
         "Đỉnh của chóp!",
         "Tràn đầy năng lượng!"
     ]
+    
+    static let finish = [
+        "Hôm nay uống đủ nước rồi, dừng lại thôi!",
+        "Hoàn thành chỉ tiêu nước hôm nay rồi!",
+        "Cơ thể đã đủ nước cho hôm nay rồi nhé!",
+        "Tốt lắm! Hôm nay uống đủ nước rồi.",
+        "Đã đạt lượng nước cần thiết trong ngày!",
+        "Uống đủ rồi, nhớ nghỉ ngơi nhé!",
+        "Hôm nay đủ nước rồi, tiếp tục duy trì nhé!",
+    ]
+
 }

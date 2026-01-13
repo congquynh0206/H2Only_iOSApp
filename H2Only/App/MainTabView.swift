@@ -15,7 +15,7 @@ struct MainTabView: View {
                     Text("Trang chủ")
                 }
             
-            Text("Màn hình Lịch sử (Đang làm)")
+            HistoryView()
                 .tabItem {
                     Image("ic_history").renderingMode(.template)
                     Text("Lịch sử")
