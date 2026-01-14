@@ -21,45 +21,42 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Header Title
-                Text("Lịch sử")
-                    .font(.headline)
-                    .padding(.vertical, 10)
-                
-                
-                
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        
-                        // Header Control
-                        DateControlView(viewModel: viewModel)
-                        
-                        Graph(viewModel: viewModel, waterLogs: waterLogs, dailyGoal: dailyGoal)
-                        
-                        // Picker Tab
-                        Picker("View Mode", selection: $viewModel.selectedTab) {
-                            Text("Tháng").tag(0)
-                            Text("Năm").tag(1)
-                        }
-                        .pickerStyle(.segmented)
-                        .frame(width: 170)
-                        .background(Color.blue.opacity(0.5))
-                        .cornerRadius(10)
-                        .padding(2)
-                        
-                        // UI ở dưới
-                        VStack(spacing: 10) {
-                            WeekFinish()
-                            DrinkWaterReport(viewModel: viewModel, logs: waterLogs, goal: dailyGoal)
-                                .padding(.horizontal,20)
-                            Character().padding(.horizontal,20)
-                        }
+        VStack(spacing: 0) {
+            // Header Title
+            Text("Lịch sử")
+                .font(.headline)
+                .padding(.vertical, 10)
+            
+            
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    
+                    // Header Control
+                    DateControlView(viewModel: viewModel)
+                    
+                    Graph(viewModel: viewModel, waterLogs: waterLogs, dailyGoal: dailyGoal)
+                    
+                    // Picker Tab
+                    Picker("View Mode", selection: $viewModel.selectedTab) {
+                        Text("Tháng").tag(0)
+                        Text("Năm").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 170)
+                    .background(Color.blue.opacity(0.5))
+                    .cornerRadius(10)
+                    .padding(2)
+                    
+                    // UI ở dưới
+                    VStack(spacing: 10) {
+                        WeekFinish(viewModel: viewModel, logs: waterLogs, goal: dailyGoal)
+                        DrinkWaterReport(viewModel: viewModel, logs: waterLogs, goal: dailyGoal)
+                            .padding(.horizontal,10)
+                        Character().padding(.horizontal,20)
                     }
                 }
             }
-            .navigationBarHidden(true)
         }
     }
 }
@@ -68,19 +65,60 @@ struct HistoryView: View {
 
 //Hoàn thành hàng tuần
 struct WeekFinish: View {
-    let days = ["CN", "Th 2", "Th 3", "Th 4", "Th 5", "Th 6", "Th 7"]
-    let status = [true, true, false, true, false, true, false]
+    @ObservedObject var viewModel: HistoryViewModel
+    var logs: Results<WaterLog>
+    var goal: Double
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Hoàn thành hàng tuần")
-                .font(.headline)
-                .padding(.leading, 5)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Hoàn thành hàng tuần")
+                    .font(.headline)
+                
+                Spacer()
+                
+                // Chỉ hiện mũi tên nếu đang ở Tab Tháng
+                if viewModel.selectedTab == 0 {
+                    HStack(spacing: 15) {
+                        Button(action: { viewModel.changeWeek(by: -1) }) {
+                            Image(systemName: "chevron.left")
+                                .font(.caption)
+                                .foregroundColor(.black)
+                        }
+                        
+                        // Title
+                        Text(viewModel.weekRangeTitle)
+                            .font(.caption)
+                            .frame(minWidth: 80) 
+                        
+                        Button(action: { viewModel.changeWeek(by: 1) }) {
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.black)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.blue.opacity(0.3))
+                    .cornerRadius(8)
+                } else {
+                    Text("Tuần này")
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.blue.opacity(0.2))
+                        .cornerRadius(8)
+                }
+            }
+            .padding(.horizontal, 5)
+            
+            // 7 ICON
+            let weeklyStatus = viewModel.getWeeklyStatus(logs: logs, goal: goal)
             
             HStack(spacing: 0) {
-                ForEach(0..<7, id: \.self) { index in
-                    IconWeekFinish(isFinish: status[index], date: days[index])
-                        .frame(maxWidth: .infinity) // Chia đều chiều ngang
+                ForEach(weeklyStatus, id: \.date) { item in
+                    IconWeekFinish(status: item.status, date: item.date)
+                        .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -95,11 +133,11 @@ struct DrinkWaterReport: View {
     let logs : Results<WaterLog>
     let goal : Double
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Báo cáo nước uống")
                 .font(.headline)
-                .padding(15)
-           
+                .padding(.leading, 10)
+            
             
             VStack(spacing: 0) {
                 let report = viewModel.calculateReport(logs: logs, goal: goal)
@@ -108,6 +146,7 @@ struct DrinkWaterReport: View {
                 ReportRow(color: .orange, content: "Hoàn thành trung bình", result: "\(report.completionAvg) %")
                 ReportRow(color: .red, content: "Tần suất uống", result: "\(report.completionAvg) lần / ngày")
             }
+            .padding(.horizontal, 20)
         }
         .background(Color.white)
     }
@@ -127,7 +166,7 @@ struct Character : View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 15, height: 15)
-                .offset(x: 11, y: -15)
+                .offset(x: 10.5, y: -15)
             
             HStack(){
                 // Nội dung
@@ -146,35 +185,58 @@ struct Character : View {
 
 // Reusable item
 struct IconWeekFinish: View {
-    let isFinish: Bool
-    let date: String
+    let status : DailyStatus
+    let date: Date
+    
+    var dayLabel: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "vi_VN")
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: date)
+    }
     
     var body: some View {
         VStack(spacing: 8) {
             ZStack {
-                if isFinish {
-                    Image("ic_completed_day") // Thay ảnh thật
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 40, height: 40)
-                        .foregroundColor(.green) // Fallback color
+                switch status {
+                case .empty:
+                    Circle()
+                        .fill(Color.blue.opacity(0.6))
+                        .frame(width: 36, height: 36)
                     
-                    Image("ic_tick") // Thay ảnh thật
-                        .resizable()
-                        .frame(width: 15, height: 15)
-                        .offset(x: 10, y: -10)
-                        .foregroundColor(.green)
-                } else {
-                    Image("ic_incompleted_day") // Thay ảnh thật
+                case .inProgress:
+                    Image("ic_completed_day")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 40, height: 40)
-                        .foregroundColor(.gray.opacity(0.3))
+                        .frame(width: 36, height: 36)
+                        .foregroundColor(.cyan)
+                    
+                case .completed:
+                    ZStack {
+                        Image("ic_completed_day")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 36, height: 36)
+                            .foregroundColor(.cyan)
+                        
+                        Image("ic_tick") // Dấu tick
+                            .resizable()
+                            .frame(width: 14, height: 14)
+                            .offset(x: 12, y: -12)
+                    }
+                    
+                case .failed:
+                    Image("ic_incompleted_day")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 36, height: 36)
+                        .foregroundColor(.gray)
                 }
             }
             
-            Text(date)
-                .font(.caption)
+            Text(dayLabel)
+                .font(.caption2)
+                .foregroundColor(.gray)
         }
     }
 }

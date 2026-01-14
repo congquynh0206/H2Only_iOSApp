@@ -9,10 +9,37 @@ import Foundation
 import RealmSwift
 import SwiftUI
 
+
+// Trạng thái Hoàn thành hàng tuần
+enum DailyStatus {
+    case empty       // Chưa đến hoặc chưa uống
+    case inProgress  // Đang uống, chưa xong
+    case completed   // Đã xong
+    case failed      // Ngày quá khứ không đạt mục tiêu
+}
+
+// Để gửi text ngày với trạng thái cho View
+struct DayStatus {
+    let date: Date
+    let status: DailyStatus
+}
+
+
 class HistoryViewModel: ObservableObject {
     // 0: Tháng, 1: Năm
     @Published var selectedTab: Int = 0
-    @Published var currentDate: Date = Date()
+    @Published var selectedWeekIndex: Int = 0
+    @Published var currentDate: Date = Date() {
+        didSet {
+            updateWeekIndex()
+        }
+    }
+    init() {
+        updateWeekIndex()
+    }
+    
+    
+    // MARK: ----Graph----
     
     // Tiêu đề thời gian
     var timeTitle: String {
@@ -24,17 +51,6 @@ class HistoryViewModel: ObservableObject {
             formatter.dateFormat = "yyyy" // 2026
         }
         return formatter.string(from: currentDate)
-    }
-    
-    // Nếu là tháng thì trừ month, năm thì trừ year
-    func previousTime() {
-        let component: Calendar.Component = selectedTab == 0 ? .month : .year
-        currentDate = Calendar.current.date(byAdding: component, value: -1, to: currentDate) ?? currentDate
-    }
-    
-    func nextTime() {
-        let component: Calendar.Component = selectedTab == 0 ? .month : .year
-        currentDate = Calendar.current.date(byAdding: component, value: 1, to: currentDate) ?? currentDate
     }
     
     // Tính toán graph
@@ -104,7 +120,142 @@ class HistoryViewModel: ObservableObject {
     }
     
     
-    // Báo cái nước uống
+    //MARK: ----Hoàn thành hàng tuần----
+    
+    var currentWeekDays : [Date] {
+        let calendar = Calendar.current
+        
+        // Tab năm
+        if selectedTab == 1 {
+            let today = Date()
+            
+            // Tìm ngày hôm nay là tuần số mấy, của năm nào
+            guard let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else { return [] }
+            return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: startOfWeek) }
+        } else {
+            // Tab tháng
+            // Tim ngày m1 của tháng đang chọn
+            guard let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: currentDate)) else { return [] }
+            
+            // Tìm ngày đầu tuần chứa ngày mùng 1 của tháng đó
+            guard let startOfFirstWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: startOfMonth)) else { return [] }
+            
+            // Cộng thêm số tuần người dùng đã next (selectedWeekIndex * 7 ngày)
+            let startOfSelectedWeek = calendar.date(byAdding: .weekOfYear, value: selectedWeekIndex, to: startOfFirstWeek) ?? startOfFirstWeek
+            
+            // Tạo mảng 7 ngày
+            return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: startOfSelectedWeek) }
+        }
+    }
+    
+    // Title tuần
+    var weekRangeTitle: String {
+        let days = currentWeekDays
+        guard let first = days.first, let last = days.last else { return "" }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM"
+        return "\(formatter.string(from: first)) - \(formatter.string(from: last))"
+    }
+    
+    
+    // Hàm chuyển tuần
+    func changeWeek(by value: Int) {
+        // Chỉ cho phép đổi tuần khi ở Tab Tháng
+        if selectedTab == 0 {
+            selectedWeekIndex += value
+        }
+    }
+    
+    // Tự động chọn tuần
+    private func updateWeekIndex() {
+        let calendar = Calendar.current
+        let today = Date()
+        
+        //  Kiểm tra xem tháng đang xem có phải tháng này không
+        let isSameMonth = calendar.isDate(currentDate, equalTo: today, toGranularity: .month)
+        
+        if isSameMonth {
+            // Nếu là tháng hiện tại thì tính xem là tuần thứ mấy
+            
+            // Tìm ngày đầu tháng
+            guard let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: currentDate)) else { return }
+            
+            // Tìm ngày đầu tuần của mùng 1 - tuần đầu
+            guard let startOfFirstWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: startOfMonth)) else { return }
+            
+            // Tìm ngày đầu tuần của hôm nay - tuần hiện tại
+            guard let startOfCurrentWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else { return }
+            
+            // Tuần hiện tại - Tuần đầu = Index cần tìm
+            if let weeksDiff = calendar.dateComponents([.weekOfYear], from: startOfFirstWeek, to: startOfCurrentWeek).weekOfYear {
+                selectedWeekIndex = weeksDiff
+            }
+        } else {
+            // Nếu khác tháng thì luôn hiện tuần đầu
+            selectedWeekIndex = 0
+        }
+    }
+    
+    
+    // Tính toán trạng thái cho 7 ngày
+    func getWeeklyStatus(logs: Results<WaterLog>, goal: Double) -> [DayStatus] {
+        let days = currentWeekDays // Lấy 7 ngày ở trên
+        let calendar = Calendar.current
+        let today = Date()
+        
+        return days.map { date in
+            // Tính tổng nước uống ngày hôm đó
+            let logsInDay = logs.filter { calendar.isDate($0.date, equalTo: date, toGranularity: .day) }
+            let totalAmount = logsInDay.reduce(0) { $0 + Double($1.amount) }
+            
+            
+            let isToday = calendar.isDateInToday(date)
+            let isFuture = date > today && !isToday // Ngày tương lai
+            let isPast = date < today && !isToday   // Ngày quá khứ
+            
+            var status: DailyStatus = .empty
+            
+            if isFuture {
+                // Chưa đến -> Circle xanh
+                status = .empty
+            } else if isToday {
+                // Hôm nay
+                if totalAmount == 0 {
+                    status = .empty // Chưa uống gì -> Circle xanh
+                } else if totalAmount >= goal {
+                    status = .completed // Đủ -> Tick
+                } else {
+                    status = .inProgress // Uống dở -> Cốc
+                }
+            } else if isPast {
+                // Quá khứ
+                if totalAmount >= goal {
+                    status = .completed // Đã hoàn thành trong quá khứ -> Tick
+                } else {
+                    status = .failed // Qua rồi mà ko xong -> Cốc xám
+                }
+            }
+            
+            return DayStatus(date: date, status: status)
+        }
+    }
+    
+    // Nếu là tháng thì trừ month, năm thì trừ year
+    func previousTime() {
+        let component: Calendar.Component = selectedTab == 0 ? .month : .year
+        currentDate = Calendar.current.date(byAdding: component, value: -1, to: currentDate) ?? currentDate
+    }
+    
+    func nextTime() {
+        let component: Calendar.Component = selectedTab == 0 ? .month : .year
+        currentDate = Calendar.current.date(byAdding: component, value: 1, to: currentDate) ?? currentDate
+    }
+    
+    
+    
+
+    //MARK: ---- Báo cáo nước uống ----
     func calculateReport (logs: Results<WaterLog>, goal: Double) -> WaterReport{
         let calendar = Calendar.current
         var totalWater: Double = 0

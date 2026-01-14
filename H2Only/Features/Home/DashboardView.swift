@@ -20,12 +20,13 @@ struct DashboardView: View {
     @State var currentAdvice: String = "Không uống nước ngay sau khi ăn"
     
     var body: some View {
-        ZStack {
-            Color.white.ignoresSafeArea()
+        VStack {
+//            Color.white.ignoresSafeArea()
+            HeaderView()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     
-                    HeaderView()
+                    
                     // Header
                     AdviceView(content: currentAdvice)
                     
@@ -452,7 +453,7 @@ struct HeaderView : View {
                 Spacer()
             }
             .background(Color.white)
-            .zIndex(1)
+//            .zIndex(1)
         }
     }
 }

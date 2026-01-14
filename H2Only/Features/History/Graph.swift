@@ -22,7 +22,7 @@ struct Graph: View {
         VStack(alignment: .leading, spacing: 5) {
             Text("(%)")
                 .font(.caption)
-                .foregroundColor(.gray)
+                .foregroundColor(.black)
                 .padding(.leading, 5)
             
             let data = viewModel.generateChartData(from: waterLogs, goal: dailyGoal)
@@ -39,7 +39,7 @@ struct Graph: View {
                             Image("ic_day_completed")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 20, height: 20)
+                                .frame(width: 10, height: 10)
                         }
                     }
                 }
@@ -52,6 +52,7 @@ struct Graph: View {
                         .foregroundStyle(Color.black.opacity(0.5))
                     AxisValueLabel()
                         .font(.caption2)
+                        .foregroundStyle(Color.black)
                 }
             }
             // Trục X
@@ -130,7 +131,7 @@ struct DateControlView: View {
         HStack (spacing: 20){
             Spacer()
             Button(action: { viewModel.previousTime() }) {
-                Image("ic_backward_invisible")
+                Image("ic_backward_normal")
                     .resizable().frame(width: 20, height: 20)
                     .foregroundColor(.gray)
             }
@@ -143,7 +144,7 @@ struct DateControlView: View {
             
             
             Button(action: { viewModel.nextTime() }) {
-                Image("ic_forward_invisible")
+                Image("ic_forward_normal")
                     .resizable().frame(width: 20, height: 20)
                     .foregroundColor(.gray)
             }
