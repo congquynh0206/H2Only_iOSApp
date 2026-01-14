@@ -95,9 +95,87 @@ class HistoryViewModel: ObservableObject {
             components.day = 1
             let date = calendar.date(from: components) ?? Date()
             let amount = monthlyTotals[month] ?? 0
-            // Goal của tháng = Goal ngày * 30 (ước lượng trung bình để tính %)
-            let monthlyGoal = goal * 30
+            
+            let daysInMonth = calendar.range(of: .day, in: .month, for: date)?.count ?? 30
+            let monthlyGoal = goal * Double(daysInMonth)
+            
             return ChartDataPoint(date: date, amount: amount, goal: monthlyGoal, label: "T\(month)")
         }
+    }
+    
+    
+    // Báo cái nước uống
+    func calculateReport (logs: Results<WaterLog>, goal: Double) -> WaterReport{
+        let calendar = Calendar.current
+        var totalWater: Double = 0
+        var daysCount: Int = 1
+        var weeksCount: Double = 1
+        var monthsCount: Double = 1
+        
+        // Nếu đang là tab tháng
+        if selectedTab == 0 {
+            // Lấy các bản ghi trong tháng, năm đc chọn
+            guard let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: currentDate)),
+                  let range = calendar.range(of: .day, in: .month, for: startOfMonth) else {return  WaterReport()}
+            
+            // Tính tổng lượng nước uống của cả tháng
+            let logsInMonth = logs.filter { calendar.isDate($0.date, equalTo: startOfMonth, toGranularity: .month) }    // Lọc
+            totalWater = logsInMonth.reduce(0) { $0 + Double($1.amount) }       // Tính
+            
+            // Xác định số ngày để chia tbinh, tính đến thời điểm hiện tại (mới mùng 7 thì tính 7 ngày thoi)
+            let isCurrentMonth = calendar.isDate(Date(), equalTo: startOfMonth, toGranularity: .month)
+            daysCount = isCurrentMonth ? calendar.component(.day, from: Date()) : range.count
+            
+            // Quy đổi ra tuần và tháng
+            weeksCount = Double(daysCount) / 7.0
+            monthsCount = 1 // vì đang ở tab tháng
+            
+        } else {
+            // Tab Năm
+            
+            // Lấy các bản ghi ở năm đc chọn
+            guard let startOfYear = calendar.date(from: calendar.dateComponents([.year], from: currentDate)) else { return WaterReport() }
+            
+            // Tính tổng nước trong năm
+            let logsInYear = logs.filter { calendar.isDate($0.date, equalTo: startOfYear, toGranularity: .year) }   // lọc
+            totalWater = logsInYear.reduce(0) { $0 + Double($1.amount) }    // tính tổng
+            
+            // Check xem phải năm nay ko
+            let isCurrentYear = calendar.isDate(Date(), equalTo: startOfYear, toGranularity: .year)
+            
+            if isCurrentYear {
+                // Nếu năm nay thì tính đến ngày hiện tại thôi
+                daysCount = calendar.ordinality(of: .day, in: .year, for: Date()) ?? 1
+            } else {
+                daysCount = 365
+            }
+            
+            // Quy đổi
+            weeksCount = Double(daysCount) / 7.0
+            monthsCount = Double(daysCount) / 30.0
+        }
+        // Tbinh tuần = Tổng nước / Số tuần
+        let weeklyAvg = weeksCount > 0 ? Int(totalWater / weeksCount) : 0
+        
+        // Tbinh tháng
+        let monthlyAvg = monthsCount > 0 ? Int(totalWater / monthsCount) : 0
+        
+        // Tỉ lệ hoàn thành = (Tbinh uống mỗi ngày / Mục tiêu ngày) * 100
+        let dailyAvg = daysCount > 0 ? (totalWater / Double(daysCount)) : 0
+        let completionAvg = Int((dailyAvg / goal) * 100)
+        
+        // Tần suất uống
+        let totalLogsCount = selectedTab == 0
+        ? logs.filter { calendar.isDate($0.date, equalTo: self.currentDate, toGranularity: .month) }.count
+        : logs.filter { calendar.isDate($0.date, equalTo: self.currentDate, toGranularity: .year) }.count
+        
+        let frequency = daysCount > 0 ? totalLogsCount / daysCount : 0
+        
+        return WaterReport(
+            weeklyAvg: weeklyAvg,
+            monthlyAvg: monthlyAvg,
+            completionAvg: completionAvg,
+            frequency: frequency
+        )
     }
 }

@@ -52,7 +52,8 @@ struct HistoryView: View {
                         // UI ở dưới
                         VStack(spacing: 10) {
                             WeekFinish()
-                            DrinkWaterReport().padding(.horizontal,20)
+                            DrinkWaterReport(viewModel: viewModel, logs: waterLogs, goal: dailyGoal)
+                                .padding(.horizontal,20)
                             Character().padding(.horizontal,20)
                         }
                     }
@@ -90,6 +91,9 @@ struct WeekFinish: View {
 
 // Báo cáo nước uống
 struct DrinkWaterReport: View {
+    @ObservedObject var viewModel : HistoryViewModel
+    let logs : Results<WaterLog>
+    let goal : Double
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Báo cáo nước uống")
@@ -98,10 +102,11 @@ struct DrinkWaterReport: View {
            
             
             VStack(spacing: 0) {
-                ReportRow(color: .green, content: "Trung bình hàng tuần", result: "9525 ml/ ngày")
-                ReportRow(color: .blue, content: "Trung bình hàng tháng", result: "4469 ml/ ngày")
-                ReportRow(color: .orange, content: "Hoàn thành trung bình", result: "59 %")
-                ReportRow(color: .red, content: "Tần suất uống", result: "7 lần / ngày")
+                let report = viewModel.calculateReport(logs: logs, goal: goal)
+                ReportRow(color: .green, content: "Trung bình hàng tuần", result: "\(report.weeklyAvg) ml/ tuần")
+                ReportRow(color: .blue, content: "Trung bình hàng tháng", result: "\(report.monthlyAvg) ml/ tháng")
+                ReportRow(color: .orange, content: "Hoàn thành trung bình", result: "\(report.completionAvg) %")
+                ReportRow(color: .red, content: "Tần suất uống", result: "\(report.completionAvg) lần / ngày")
             }
         }
         .background(Color.white)
@@ -122,7 +127,7 @@ struct Character : View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 15, height: 15)
-                .offset(x: 12, y: -15)
+                .offset(x: 11, y: -15)
             
             HStack(){
                 // Nội dung
@@ -134,6 +139,7 @@ struct Character : View {
             .background(Color.blue.opacity(0.15))
             .cornerRadius(12)
         }
+        .padding(.bottom, 20)
     }
 }
 

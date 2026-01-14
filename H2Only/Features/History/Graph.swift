@@ -39,7 +39,7 @@ struct Graph: View {
                             Image("ic_day_completed")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 24, height: 24)
+                                .frame(width: 20, height: 20)
                         }
                     }
                 }
