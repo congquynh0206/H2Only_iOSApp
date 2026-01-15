@@ -12,6 +12,7 @@ struct ReminderCalendar: View {
     @StateObject private var viewModel = SettingViewModel()
     
     @ObservedResults(UserProfile.self) var userProfiles
+    @Environment(\.dismiss) var dismiss
     
     var userProfile: UserProfile? {
         userProfiles.first
@@ -25,7 +26,7 @@ struct ReminderCalendar: View {
                     .font(.caption)
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 5)
                     .frame(maxWidth: .infinity)
                     .background(Color(.systemGroupedBackground))
                 
@@ -86,34 +87,31 @@ struct ReminderCalendar: View {
         }
         .navigationTitle("Lịch nhắc nhở")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar{
+            ToolbarItem(placement: .navigationBarTrailing){
+                Button(action: {
+                    dismiss()
+                }){
+                    Image("ic_close")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
+                }
+            }
+        }
         
         // Popup Sheet
-        .sheet(isPresented: $viewModel.showEditPopup) {
-            VStack(spacing: 20) {
-                Text(viewModel.editingItem == nil ? "Thêm giờ nhắc" : "Sửa giờ nhắc")
-                    .font(.headline)
-                    .padding(.top)
-                
-                // DatePicker
-                DatePicker("Chọn giờ", selection: $viewModel.selectedTimeForEdit, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                
-                HStack(spacing: 60) {
-                    Button("Hủy") {
-                        viewModel.showEditPopup = false
-                    }
-                    .foregroundColor(.red)
-                    
-                    Button("Lưu") {
+        .overlay {
+            if viewModel.showEditPopup {
+                TimePickerPopup(
+                    isPresented: $viewModel.showEditPopup,
+                    selection: $viewModel.selectedTimeForEdit, // Binding 
+                    onSave: {
                         viewModel.saveItem()
-                        viewModel.showEditPopup = false
                     }
-                    .fontWeight(.bold)
-                }
-                .padding()
+                )
             }
-            .presentationDetents([.height(300)])
         }
     }
     

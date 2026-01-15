@@ -15,7 +15,7 @@ struct SchedulerHelper {
         case failure(String)
     }
 
-    static func generateSmartSchedule(wakeUpTime: Date, bedTime: Date) -> ScheduleResult {
+    static func generateReminderSchedule(wakeUpTime: Date, bedTime: Date) -> ScheduleResult {
         let calendar = Calendar.current
         let today = Date()
         

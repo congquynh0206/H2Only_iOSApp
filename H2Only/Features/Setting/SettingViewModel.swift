@@ -8,10 +8,21 @@
 import SwiftUI
 import RealmSwift
 
+enum ProfileTimeType {
+    case wakeUpTime
+    case bedTime
+}
+
 class SettingViewModel: ObservableObject {
     @Published var showEditPopup: Bool = false
     @Published var selectedTimeForEdit: Date = Date()
     @Published var editingItem: ReminderItem? = nil // Nếu nil = Thêm mới, Có giá trị = Sửa
+    
+    // alert hỏi có tạo lại lịch k
+    @Published var showRescheduleAlert: Bool = false
+    
+    // loại tgian đang sửa: dậy, ngủ
+    var currentEditingType: ProfileTimeType = .wakeUpTime
     
     private var userProfile: UserProfile? {
         let realm = try? Realm()
@@ -89,7 +100,7 @@ class SettingViewModel: ObservableObject {
               let wakeUp = user.wakeUpTime,
               let bedTime = user.bedTime else { return }
     
-        let result = SchedulerHelper.generateSmartSchedule(wakeUpTime: wakeUp, bedTime: bedTime)
+        let result = SchedulerHelper.generateReminderSchedule(wakeUpTime: wakeUp, bedTime: bedTime)
         
         switch result {
         case .success(let dates):
@@ -104,6 +115,34 @@ class SettingViewModel: ObservableObject {
             }
         case .failure(let errorMessage):
             print("Lỗi: \(errorMessage)")
+        }
+    }
+    
+    
+    // Hàm mở popup cho setting
+    func openProfileTimePicker(type: ProfileTimeType, currentTime: Date?) {
+        self.currentEditingType = type
+        self.selectedTimeForEdit = currentTime ?? Date()
+        self.showEditPopup = true
+    }
+    
+    // Hàm lưu Profile
+    func saveProfileTime() {
+        guard let realm = try? Realm(),
+              let user = userProfile,
+              let liveUser = user.thaw() else { return }
+        
+        try? realm.write {
+            switch currentEditingType {
+            case .wakeUpTime:
+                liveUser.wakeUpTime = selectedTimeForEdit
+            case .bedTime:
+                liveUser.bedTime = selectedTimeForEdit
+            }
+        }
+        // đảm bảo pop up tắt mới bật alert
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.showRescheduleAlert = true
         }
     }
 }
