@@ -20,17 +20,14 @@ struct Graph: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("(%)")
-                .font(.caption)
-                .foregroundColor(.black)
-                .padding(.leading, 5)
             
             let data = viewModel.generateChartData(from: waterLogs, goal: dailyGoal)
+            let unit: Calendar.Component = viewModel.selectedTab == 0 ? .day : .month
             
             Chart {
                 ForEach(data) { item in
                     BarMark(
-                        x: .value("Time", item.date),
+                        x: .value("Time", item.date, unit: unit),
                         y: .value("Percent", min(item.percent, 1.0) * 100)
                     )
                     .foregroundStyle(Color.cyan)
@@ -45,11 +42,23 @@ struct Graph: View {
                 }
             }
             .chartYScale(domain: 0...115)
+            .overlay(alignment: .topLeading) {
+                Text("(%)")
+                    .font(.caption)
+                    .foregroundColor(.black)
+                    .offset(y: -10)
+            }
             // Trục Y
             .chartYAxis {
                 AxisMarks(position: .leading, values: [0, 20, 40, 60, 80, 100]) { value in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 1))
-                        .foregroundStyle(Color.black.opacity(0.5))
+                    
+                    if let intValue = value.as(Int.self), intValue == 0 {
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 1))
+                            .foregroundStyle(Color.black.opacity(0.5))
+                    } else {
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [5]))
+                            .foregroundStyle(Color.black.opacity(0.5))
+                    }
                     AxisValueLabel()
                         .font(.caption2)
                         .foregroundStyle(Color.black)
@@ -61,12 +70,18 @@ struct Graph: View {
                     // Biểu đồ tháng
                     AxisMarks(position: .bottom, values: .stride(by: .day, count: 1)) { value in
                         // Vẽ tick
-                        AxisValueLabel(collisionResolution: .greedy) {
-                            Rectangle()
-                                .fill(Color.gray)
-                                .frame(width: 1, height: 10)
-                                .offset(y: -14) 
-                        }
+//                        AxisValueLabel(collisionResolution: .greedy) {
+//                            Rectangle()
+//                                .fill(Color.gray)
+//                                .frame(width: 1, height: 10)
+//                                .offset(y: -14) 
+//                        }
+                        
+                        AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
+                            .foregroundStyle(Color.gray)
+                            .offset(y: -18.5)
+                        
+                        
                         
                         // Nhãn và GridLine
                         if let date = value.as(Date.self) {
@@ -77,15 +92,11 @@ struct Graph: View {
                                     .foregroundStyle(Color.black.opacity(0.5))
                                 
                                 AxisValueLabel {
-                                    if day == 1 {
-                                        Text("thg \(Calendar.current.component(.month, from: date))")
-                                            .font(.caption2)
-                                            .foregroundStyle(Color.black)
-                                    } else {
-                                        Text("\(day)")
-                                            .font(.caption2)
-                                            .foregroundStyle(Color.black)
-                                    }
+                                    Text("\(day)")
+                                        .font(.caption2)
+                                        .foregroundStyle(Color.black)
+                                        .offset(x: -7)
+                                    
                                 }
                             }
                         }
@@ -98,7 +109,10 @@ struct Graph: View {
 //                                .fill(Color.gray)
 //                                .frame(width: 1, height: 10)
 //                                .offset(y: -14)
-//                        }
+//                      }
+                        AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
+                            .foregroundStyle(Color.gray)
+                            .offset(y: -18.5)
                         
                         if let date = value.as(Date.self) {
                             let month = Calendar.current.component(.month, from: date)
@@ -111,12 +125,13 @@ struct Graph: View {
                                 Text("\(month)")
                                     .font(.caption2)
                                     .foregroundStyle(Color.black)
+                                    .offset(x: -7)
                             }
                         }
                     }
                 }
             }
-            .frame(height: 250)
+            .frame(height: 220)
             .padding(.horizontal, 10)
         }
         .background(Color.white)
@@ -140,6 +155,7 @@ struct DateControlView: View {
             
             Text(viewModel.timeTitle)
                 .font(.headline)
+                .frame(minWidth: 150)
                 .fontWeight(.bold)
             
             

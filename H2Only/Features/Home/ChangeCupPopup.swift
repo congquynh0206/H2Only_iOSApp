@@ -44,6 +44,11 @@ struct ChangeCupPopup: View {
                         .onTapGesture {
                             viewModel.selectCup(cup.amount)
                         }
+                        .contextMenu{
+                            Button ("Xoá cốc" ){
+                                viewModel.deleteCup(cup)
+                            }
+                        }
                     }
                 }
                 
@@ -145,7 +150,7 @@ struct CupItemView: View {
 // Custom alert: Nhập số ml
 struct CustomAmountAlert: View {
     @Binding var isPresented: Bool
-    @Binding var isShowInvalid: Bool // Binding để kích hoạt alert lỗi
+    @Binding var isShowInvalid: Bool
     var onConfirm: (Int) -> Void
     @State private var text: String = ""
     
@@ -174,7 +179,7 @@ struct CustomAmountAlert: View {
                         Rectangle()
                             .frame(height: 1)
                             .foregroundColor(.gray)
-                            .frame(width: 120) // Chỉnh lại độ rộng line cho đẹp
+                            .frame(width: 120)
                     }
                     
                     Text("ml")
@@ -245,7 +250,7 @@ struct InValidCustomAlert: View {
                 }
                 .padding(.bottom, 20)
                 .foregroundColor(.blue)
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
             }
             .frame(width: 300)
             .background(Color.white)

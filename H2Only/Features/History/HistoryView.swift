@@ -54,6 +54,25 @@ struct HistoryView: View {
                         DrinkWaterReport(viewModel: viewModel, logs: waterLogs, goal: dailyGoal)
                             .padding(.horizontal,10)
                         Character().padding(.horizontal,20)
+                        
+                        HStack {
+                            Button("Tạo Data Test") {
+                                viewModel.createMockData()
+                            }
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundStyle(Color.white)
+                            .cornerRadius(8)
+                            
+                            Button("Xóa Hết") {
+                                viewModel.deleteAllData()
+                            }
+                            .padding()
+                            .background(Color.red)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
+                        .padding(.bottom, 10)
                     }
                 }
             }
@@ -141,8 +160,8 @@ struct DrinkWaterReport: View {
             
             VStack(spacing: 0) {
                 let report = viewModel.calculateReport(logs: logs, goal: goal)
-                ReportRow(color: .green, content: "Trung bình hàng tuần", result: "\(report.weeklyAvg) ml/ tuần")
-                ReportRow(color: .blue, content: "Trung bình hàng tháng", result: "\(report.monthlyAvg) ml/ tháng")
+                ReportRow(color: .green, content: "Trung bình hàng tuần", result: "\(report.weeklyAvg) ml / tuần")
+                ReportRow(color: .blue, content: "Trung bình hàng tháng", result: "\(report.monthlyAvg) ml / tháng")
                 ReportRow(color: .orange, content: "Hoàn thành trung bình", result: "\(report.completionAvg) %")
                 ReportRow(color: .red, content: "Tần suất uống", result: "\(report.completionAvg) lần / ngày")
             }
@@ -236,7 +255,7 @@ struct IconWeekFinish: View {
             
             Text(dayLabel)
                 .font(.caption2)
-                .foregroundColor(.gray)
+                .foregroundColor(.black)
         }
     }
 }

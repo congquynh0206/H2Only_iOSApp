@@ -329,4 +329,71 @@ class HistoryViewModel: ObservableObject {
             frequency: frequency
         )
     }
+    
+    //MARK: Test data
+    
+    // Hàm tạo dữ liệu giả
+    func createMockData() {
+        guard let realm = try? Realm() else { return }
+        
+        let calendar = Calendar.current
+        let today = Date()
+        
+        try? realm.write {
+            // Chạy vòng lặp tạo dữ liệu cho 60 ngày quá khứ
+            for dayOffset in 1..<60 {
+                // Tính ngày: Hôm nay lùi lại i ngày
+                guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
+                
+                // Random số lần uống trong ngày đó (từ 0 đến 6 lần)
+                let numberOfDrinks = Int.random(in: 0...6)
+                
+                if numberOfDrinks > 0 {
+                    for _ in 0..<numberOfDrinks {
+                        let log = WaterLog()
+                        
+                        // Random lượng nước: 200, 300 hoặc 500ml
+                        log.amount = [200, 300, 500, 400].randomElement() ?? 200
+                        
+                        // Set thời gian ngẫu nhiên trong ngày đó
+                        let randomHour = Int.random(in: 7...22) // Uống từ 7h sáng đến 10h tối
+                        let randomDate = calendar.date(bySettingHour: randomHour, minute: Int.random(in: 0...59), second: 0, of: date) ?? date
+                        
+                        log.date = randomDate
+                        
+                        // Thêm vào Realm
+                        realm.add(log)
+                    }
+                }
+            }
+        }
+        
+        // Gán lại currentDate bằng chính nó
+        // Việc này kích hoạt @Published, làm View vẽ lại
+        let tempDate = currentDate
+        currentDate = tempDate
+        
+        print("Đã tạo xong dữ liệu giả")
+    }
+    
+    // Hàm xóa sạch dữ liệu
+    func deleteAllData() {
+        guard let realm = try? Realm() else { return }
+        
+        try? realm.write {
+            // Xóa tất cả object loại WaterLog
+            let allLogs = realm.objects(WaterLog.self)
+            realm.delete(allLogs)
+        }
+        
+        // Refresh UI
+        let tempDate = currentDate
+        currentDate = tempDate
+        
+        print("Đã xóa sạch dữ liệu")
+    }
+
 }
+
+
+

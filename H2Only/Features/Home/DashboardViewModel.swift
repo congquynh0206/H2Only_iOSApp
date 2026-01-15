@@ -125,7 +125,7 @@ class DashboardViewModel: ObservableObject {
         // Tạo cốc mới
         let newCup = Cup()
         newCup.amount = amount
-        newCup.iconName = "ic_cup_customize"
+        newCup.iconName = getIconName(for: amount, postFix: "normal")
         newCup.isDefault = false
         
         selectCup(amount)
@@ -181,6 +181,24 @@ class DashboardViewModel: ObservableObject {
             }
         }catch{
             print("Lỗi xoá water log: \(error)")
+        }
+    }
+    
+    // Hàm xoá cốc
+    func deleteCup (_ cup : Cup){
+        guard let realm = RealmManager.shared.realm else {return}
+        guard let user = userProfile else { return }
+        if let index = user.cups.firstIndex(where: { $0.amount == cup.amount} ){
+            do {
+                try realm.write{
+                    user.cups.remove(at: index)
+                    self.objectWillChange.send()
+                }
+            }catch {
+                print ("Lỗi xoá cốc: \(error)")
+            }
+        }else{
+            print("Không tìm thấy cốc")
         }
     }
     
