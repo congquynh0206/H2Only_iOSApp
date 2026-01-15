@@ -31,4 +31,12 @@ class UserProfile: Object, ObjectKeyIdentifiable {
     @Persisted var reminderInterval: Int = 60   // Nhắc mỗi bao nhiêu phút
     
     @Persisted var cups = List<Cup>()
+    
+    @Persisted var reminderSchedule = List<ReminderItem>()
+}
+
+class ReminderItem: EmbeddedObject, Identifiable {
+    @Persisted var id: ObjectId = ObjectId.generate()
+    @Persisted var time: Date
+    @Persisted var isEnabled: Bool = true
 }

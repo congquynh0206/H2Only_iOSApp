@@ -12,6 +12,7 @@ import RealmSwift
 struct H2OnlyApp: SwiftUI.App {
     // Lắng nghe thay đổi của UserProfile từ Realm
     @ObservedResults(UserProfile.self) var userProfiles
+    @StateObject var viewModel = SettingViewModel()
     init() {
         _ = RealmManager.shared
     }
@@ -21,7 +22,7 @@ struct H2OnlyApp: SwiftUI.App {
             if let user = userProfiles.first, user.isOnboardingCompleted {
                 MainTabView()
             } else {
-                OnboardingView()
+                OnboardingView(settingVM: viewModel)
                     .onAppear {
                         _ = RealmManager.shared.getUserProfile() // không cần dùng kết quả trả về
                     }

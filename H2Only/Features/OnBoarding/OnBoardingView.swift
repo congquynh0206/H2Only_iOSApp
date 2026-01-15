@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @ObservedObject var settingVM : SettingViewModel
     @State private var currentStep = 0
     
     // Dữ liệu người dùng chọn
@@ -143,6 +144,7 @@ struct OnboardingView: View {
             user.dailyGoal = WaterCalculator.calculateDailyGoal(weightKg: weight, gender: gender)
             user.isOnboardingCompleted = true
         }
+        settingVM.createNewSchedule()
     }
     
     // Hàm animation chuyển trang
