@@ -95,7 +95,7 @@ struct Graph: View {
                                     Text("\(day)")
                                         .font(.caption2)
                                         .foregroundStyle(Color.black)
-                                        .offset(x: -7)
+//                                        .offset(x:0)
                                     
                                 }
                             }
@@ -125,7 +125,7 @@ struct Graph: View {
                                 Text("\(month)")
                                     .font(.caption2)
                                     .foregroundStyle(Color.black)
-                                    .offset(x: -7)
+                                    .offset(x: 7)
                             }
                         }
                     }
