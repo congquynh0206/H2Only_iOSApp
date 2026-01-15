@@ -116,7 +116,7 @@ struct OnboardingView: View {
                                 }
                             }
                         }) {
-                            Text(currentStep == 3 ? "Finish" : "Next")
+                            Text(currentStep == 3 ? "Hoàn thành" : "Tiếp tục")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 40)
@@ -176,7 +176,7 @@ struct OnboardingTopBar: View {
             // Step 0: Gender
             TopBarItem(
                 stepIndex: 0, currentStep: currentStep,
-                title: gender == .male ? "Male" : "Female",
+                title: gender == .male ? "Nam" : "Nữ",
                 iconPrefix: "ic_gender"
             )
             
@@ -269,7 +269,7 @@ struct GenderView: View {
     
     var body: some View {
         VStack(spacing: 40) {
-            Text("Your Gender")
+            Text("Giới tính của bạn")
                 .font(.title)
                 .padding(.top,20)
             Spacer()
@@ -281,7 +281,7 @@ struct GenderView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 120, height: 120)
-                        Text("Male")
+                        Text("Nam")
                             .foregroundColor(gender == .male ? Color(.blue) : .gray)
                             .font(.headline)
                     }
@@ -294,7 +294,7 @@ struct GenderView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 120, height: 120)
-                        Text("Female")
+                        Text("Nữ")
                             .foregroundColor(gender == .female ? Color(.blue) : .gray)
                             .font(.headline)
                     }
@@ -320,7 +320,7 @@ struct WeightView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Your Weight")
+            Text("Cân nặng của bạn")
                 .font(.title)
                 .padding(.top, 20)
             Spacer()
@@ -329,7 +329,7 @@ struct WeightView: View {
                     .resizable().scaledToFit().frame(height: 350)
                 
                 
-                Picker("Weight", selection: weightInt) {
+                Picker("Cân nặng", selection: weightInt) {
                     ForEach(30...150, id: \.self) { i in
                         Text("\(i)").tag(i)
                             .font(.title2)
@@ -357,7 +357,7 @@ struct WakeUpTimeView: View {
     
     var body: some View {
         VStack(spacing: 40) {
-            Text("Wake-up time")
+            Text("Giờ thức dậy")
                 .font(.title)
                 .padding(.top, 20)
             Spacer()
@@ -386,7 +386,7 @@ struct BedTimeView: View {
     
     var body: some View {
         VStack(spacing: 40) {
-            Text("Bedtime")
+            Text("Giờ đi ngủ")
                 .font(.title)
                 .padding(.top, 20)
             Spacer()
@@ -416,7 +416,7 @@ struct GeneratingContent: View {
         VStack(spacing: 20) {
             Spacer().frame(height: 150)
             
-            Text("Generating your hydration plan...")
+            Text("Lập kế hoạch bổ sung nước cho cơ thể...")
                 .font(.headline)
                 .foregroundColor(.black)
             
@@ -452,7 +452,7 @@ struct ResultContent: View {
                     .clipShape(Circle())
                     .background(Circle().fill(Color.white))
                 
-                Text("Personal hydration plan")
+                Text("Kế hoạch bổ sung nước")
                     .font(.subheadline)
                     .foregroundColor(.white)
                     .shadow(radius: 2)
@@ -466,7 +466,7 @@ struct ResultContent: View {
             
             // Số liệu (Hiển thị to giữa màn hình)
             VStack(spacing: 10) {
-                Text("Your proper daily water intake")
+                Text("Lượng nước cần thiết hàng ngày của bạn")
                     .font(.title3)
                     .foregroundColor(.white)
                     .shadow(radius: 2)
@@ -489,7 +489,7 @@ struct ResultContent: View {
             // Nút Next
             Button(action: onFinish) {
                 VStack {
-                    Text("NEXT ->")
+                    Text("Tiếp tục ->")
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding(.bottom, 5)

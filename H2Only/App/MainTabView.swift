@@ -21,7 +21,7 @@ struct MainTabView: View {
                     Text("Lịch sử")
                 }
             
-            Text("Màn hình Cài đặt (Đang làm)")
+            SettingView()
                 .tabItem {
                     Image("ic_setting").renderingMode(.template)
                     Text("Cài đặt")

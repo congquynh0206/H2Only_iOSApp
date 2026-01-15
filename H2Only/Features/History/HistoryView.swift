@@ -161,7 +161,9 @@ struct DrinkWaterReport: View {
             VStack(spacing: 0) {
                 let report = viewModel.calculateReport(logs: logs, goal: goal)
                 ReportRow(color: .green, content: "Trung bình hàng tuần", result: "\(report.weeklyAvg) ml / tuần")
-                ReportRow(color: .blue, content: "Trung bình hàng tháng", result: "\(report.monthlyAvg) ml / tháng")
+                ReportRow(color: .blue,
+                          content: viewModel.selectedTab == 0 ? "Tổng nước đã uống tháng này" : "Trung bình hàng tháng",
+                          result: viewModel.selectedTab == 0 ? "\(report.monthlyAvg) ml" : "\(report.monthlyAvg) ml / tháng")
                 ReportRow(color: .orange, content: "Hoàn thành trung bình", result: "\(report.completionAvg) %")
                 ReportRow(color: .red, content: "Tần suất uống", result: "\(report.completionAvg) lần / ngày")
             }
