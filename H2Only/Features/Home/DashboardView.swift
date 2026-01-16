@@ -145,7 +145,7 @@ struct WaterCircle : View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 280, height: 280)
-                .shadow(radius: 12)
+                .shadow(radius: 6)
             
             // Thông tin Text + Nút uống
             VStack (){
@@ -286,17 +286,18 @@ struct HistoryList : View {
                 .padding(.horizontal)
                 .foregroundStyle(.black)
             VStack(spacing: 0) {
+                let isFirst = viewModel.todayLogs.isEmpty
                 if let user = userProfile {
-                    TimeHistoryRow(userProfile: user, cupSize: viewModel.currentCup?.amount ?? 100)
+                    TimeHistoryRow(userProfile: user, isFirst: isFirst ,cupSize: viewModel.currentCup?.amount ?? 100)
                 } else {
-                    TimeHistoryRow(userProfile: UserProfile(), cupSize: 100) // UserProfile() rỗng
+                    TimeHistoryRow(userProfile: UserProfile(),isFirst: isFirst , cupSize: 100) // UserProfile() rỗng
                 }
                 // Danh sách đã uống (Lấy từ Realm)
                 ForEach(Array(viewModel.todayLogs.enumerated()), id: \.element.id) {index, log in
                     
                     let isLast = index == viewModel.todayLogs.count - 1
                     
-                    HistoryRow(log: log, isLastRow: isLast, onDelete : {
+                    HistoryRow(log: log, isLastRow: isLast ,onDelete : {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             viewModel.deleteLog(log)
                         }
@@ -389,6 +390,7 @@ struct HistoryRow: View {
 // Dòng lịch sử
 struct TimeHistoryRow: View {
     @ObservedRealmObject var userProfile: UserProfile
+    var isFirst : Bool
     var cupSize : Int
     var body: some View {
         
@@ -400,10 +402,11 @@ struct TimeHistoryRow: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 25, height: 25)
-                        
-                        Image("line_graps")
-                            .resizable()
-                            .frame(width: 2)
+                        if !isFirst{
+                            Image("line_graps")
+                                .resizable()
+                                .frame(width: 2)
+                        }
                     }.frame(width: 30)
                     HStack{
                         VStack{
@@ -438,6 +441,7 @@ struct TimeHistoryRow: View {
                 }
             }
             .padding(.horizontal, 20)
+            .padding(.top, isFirst ? 0 : 10)
             
         }
     }
@@ -555,7 +559,7 @@ struct HalfCircleProgressView: View {
                 // Nửa vòng tròn xám
                 Circle()
                     .trim(from: 0.0, to: 0.5)
-                    .stroke(Color.gray.opacity(0.15), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .stroke(Color.gray.opacity(0.3), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .rotationEffect(.degrees(180)) // Úp ngược lên
                 
                 // Nửa vòng tròn xanh

@@ -22,8 +22,10 @@ struct H2OnlyApp: SwiftUI.App {
         WindowGroup {
             if let user = userProfiles.first, user.isOnboardingCompleted {
                 MainTabView()
+                    .preferredColorScheme(.light)
             } else {
                 OnboardingView(settingVM: viewModel)
+                    .preferredColorScheme(.light)
                     .onAppear {
                         _ = RealmManager.shared.getUserProfile() // không cần dùng kết quả trả về
                     }

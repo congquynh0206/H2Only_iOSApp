@@ -9,7 +9,22 @@
 /* Begin PBXBuildFile section */
 		959AF4452F0E64E000BDE50F /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 959AF4442F0E64E000BDE50F /* RealmSwift */; };
 		959AF44E2F0E663F00BDE50F /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 959AF44D2F0E663F00BDE50F /* Lottie */; };
+		95D6B2812F1A28750082AF43 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 959AF4442F0E64E000BDE50F /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		95D6B2822F1A28750082AF43 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				95D6B2812F1A28750082AF43 /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		959AF42D2F0E5FE000BDE50F /* H2Only.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = H2Only.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -62,6 +77,7 @@
 				959AF4292F0E5FE000BDE50F /* Sources */,
 				959AF42A2F0E5FE000BDE50F /* Frameworks */,
 				959AF42B2F0E5FE000BDE50F /* Resources */,
+				95D6B2822F1A28750082AF43 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

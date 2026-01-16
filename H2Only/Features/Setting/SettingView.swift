@@ -15,22 +15,26 @@ struct SettingView : View {
     var body: some View {
         NavigationStack {
             List {
-                Section(header: Text("CÀI ĐẶT NHẮC NHỞ")) {
+                Section(header: SettingsHeaderView(title: "CÀI ĐẶT NHẮC NHỞ")) {
                     NavigationLink("Lịch nhắc nhở") {
                         ReminderCalendar()
                     }
+                    .listRowSeparator(.hidden)
                     NavigationLink("Âm thanh nhắc nhở") {
                         ReminderSound()
                     }
+                    .listRowSeparator(.hidden)
                 }
-                Section(header: Text("CHUNG")) {
+                .headerProminence(.increased)
+                
+                Section(header: SettingsHeaderView(title: "CHUNG")) {
                     HStack {
                         Text("Đơn vị")
                         Spacer()
                         Text("kg, ml")
-                            .foregroundStyle(.blue)
                             .fontWeight(.medium)
                     }
+                    .listRowSeparator(.hidden)
                     
                     // Item: Mục tiêu
                     HStack {
@@ -44,9 +48,11 @@ struct SettingView : View {
                                 .fontWeight(.medium)
                         }
                     }
+                    .listRowSeparator(.hidden)
                 }
                 
-                Section(header: Text("DỮ LIỆU CÁ NHÂN")) {
+                
+                Section(header: SettingsHeaderView(title: "DỮ LIỆU CÁ NHÂN")) {
                     HStack {
                         Text("Giới tính")
                         Spacer()
@@ -58,6 +64,7 @@ struct SettingView : View {
                                 .fontWeight(.medium)
                         }
                     }
+                    .listRowSeparator(.hidden)
                     
                     HStack {
                         Text("Cân nặng")
@@ -70,6 +77,7 @@ struct SettingView : View {
                                 .fontWeight(.medium)
                         }
                     }
+                    .listRowSeparator(.hidden)
                     
                     // Giờ dậy
                     HStack {
@@ -83,6 +91,7 @@ struct SettingView : View {
                                 .fontWeight(.medium)
                         }
                     }
+                    .listRowSeparator(.hidden)
                     
                     // Giờ ngủ
                     HStack {
@@ -97,6 +106,7 @@ struct SettingView : View {
                                 .fontWeight(.medium)
                         }
                     }
+                    .listRowSeparator(.hidden)
                 }
             }
             .listStyle(.plain)
@@ -156,7 +166,30 @@ struct SettingView : View {
     }
 }
 
-
-#Preview {
-    SettingView()
+struct SettingsHeaderView: View {
+    let title: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Khoảng cách phía trên
+            Spacer().frame(height: 10)
+            
+            // Nhóm Chữ + Gạch chân
+            VStack(alignment: .leading, spacing: 5) {
+                Text(title)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.gray)
+                    .textCase(.uppercase)
+                
+                Rectangle()
+                    .fill(Color.gray)
+                    .frame(height: 2)
+            }
+            // Ép cái VStack con này chỉ được rộng bằng nội dung bên trong (là cái Text)
+            .fixedSize(horizontal: true, vertical: false)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading) // Căn toàn bộ cụm sang trái màn hình
+        .background(Color.white)
+        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+    }
 }
