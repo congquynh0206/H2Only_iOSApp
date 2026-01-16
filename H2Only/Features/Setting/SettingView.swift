@@ -78,7 +78,7 @@ struct SettingView : View {
                         Button(action: {
                             viewModel.openProfileTimePicker(type: .wakeUpTime, currentTime: user?.wakeUpTime)
                         }) {
-                            Text(user?.wakeUpTime ?? Date(), formatter: timeFormatter)
+                            Text(user?.wakeUpTime ?? Date(), formatter: SchedulerHelper.timeFormatter)
                                 .foregroundStyle(.blue)
                                 .fontWeight(.medium)
                         }
@@ -92,7 +92,7 @@ struct SettingView : View {
                         Button(action: {
                             viewModel.openProfileTimePicker(type: .bedTime, currentTime: user?.bedTime)
                         }) {
-                            Text(user?.bedTime ?? Date(), formatter: timeFormatter)
+                            Text(user?.bedTime ?? Date(), formatter: SchedulerHelper.timeFormatter)
                                 .foregroundStyle(.blue)
                                 .fontWeight(.medium)
                         }
@@ -154,11 +154,6 @@ struct SettingView : View {
             Text("Bạn vừa thay đổi thời gian sinh hoạt. Bạn có muốn xoá lịch cũ và tạo lại lịch nhắc nhở mới phù hợp hơn không?")
         }
     }
-}
-private var timeFormatter: DateFormatter {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "HH:mm"
-    return formatter
 }
 
 

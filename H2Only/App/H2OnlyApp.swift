@@ -15,6 +15,7 @@ struct H2OnlyApp: SwiftUI.App {
     @StateObject var viewModel = SettingViewModel()
     init() {
         _ = RealmManager.shared
+        NotificationManager.shared.requestAuthorization()
     }
     
     var body: some Scene {

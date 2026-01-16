@@ -44,7 +44,7 @@ struct ReminderCalendar: View {
                                     Button(action: {
                                         viewModel.prepareEdit(item: item)
                                     }) {
-                                        Text(item.time, formatter: timeFormatter)
+                                        Text(item.time, formatter: SchedulerHelper.timeFormatter)
                                             .font(.title3)
                                             .foregroundColor(.black)
                                     }
@@ -113,11 +113,5 @@ struct ReminderCalendar: View {
                 )
             }
         }
-    }
-    
-    private var timeFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter
     }
 }

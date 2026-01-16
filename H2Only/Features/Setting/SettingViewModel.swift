@@ -40,6 +40,13 @@ class SettingViewModel: ObservableObject {
         return Double(WaterCalculator.calculateDailyGoal(weightKg: user.weight, gender: user.gender))
     }
     
+    // Cập nhật noti
+    private func updateSystemNotifications(for profile: UserProfile) {
+        let reminders = Array(profile.reminderSchedule)
+        NotificationManager.shared.scheduleNotifications(for: reminders)
+        print("Đã cập nhật hệ thống thông báo")
+    }
+    
     // MARK: Gender
     func openGenderPopup() {
         if let user = userProfile {
@@ -117,27 +124,69 @@ class SettingViewModel: ObservableObject {
         guard let realm = try? Realm(),
               let profile = userProfile else { return }
         
+        // Check trùng lặp
+        if editingItem == nil {
+            if isItemExist(in: profile.reminderSchedule, time: selectedTimeForEdit) {
+                return
+            }
+        }
+        
         try? realm.write {
             if let itemToUpdate = editingItem {
-                // sửa
+                // Sửa
                 if let liveItem = itemToUpdate.thaw() {
                     liveItem.time = selectedTimeForEdit
                 }
             } else {
-                // Thêm mới
+                // Add
                 let newItem = ReminderItem()
                 newItem.time = selectedTimeForEdit
                 newItem.isEnabled = true
                 
-                // Thaw profile
+                // Thêm vào dsach
                 if let liveProfile = profile.thaw() {
-                    // Tìm item đầu tiên lớn hơn newItem, chèn vào trước
-                    let insertionIndex = liveProfile.reminderSchedule.firstIndex(where: { $0.time > newItem.time }) ?? liveProfile.reminderSchedule.count
-                    
-                    // Insert
-                    liveProfile.reminderSchedule.insert(newItem, at: insertionIndex)
+                    liveProfile.reminderSchedule.append(newItem)
                 }
             }
+            
+            // Sắp xếp lại
+            if let liveProfile = profile.thaw() {
+                
+                // Tạo ra bản sao
+                let sortedCopies = liveProfile.reminderSchedule
+                    .sorted { $0.time < $1.time }
+                    .map { oldItem -> ReminderItem in
+                        let newItem = ReminderItem()
+                        newItem.time = oldItem.time
+                        newItem.isEnabled = oldItem.isEnabled
+                        return newItem
+                    }
+                
+                // Xoá hết
+                liveProfile.reminderSchedule.removeAll()
+                
+                // Thêm lại
+                liveProfile.reminderSchedule.append(objectsIn: sortedCopies)
+            }
+        }
+        
+        updateSystemNotifications(for: profile)
+    }
+    
+    // Hàm kiểm tra xem giờ này đã có trong list chưa
+    private func isItemExist(in list: RealmSwift.List<ReminderItem>, time: Date) -> Bool {
+        let calendar = Calendar.current
+        
+        // Lấy giờ và phút của thời gian cần check
+        let targetComponents = calendar.dateComponents([.hour, .minute], from: time)
+        
+        // Duyệt list để tìm
+        return list.contains { item in
+            let itemComponents = calendar.dateComponents([.hour, .minute], from: item.time)
+            
+            // Nếu trùng cả Giờ và Phút thì trả về true 
+            return itemComponents.hour == targetComponents.hour &&
+            itemComponents.minute == targetComponents.minute
         }
     }
     
@@ -150,6 +199,7 @@ class SettingViewModel: ObservableObject {
         try? realm.write {
             liveProfile.reminderSchedule.remove(atOffsets: offsets)
         }
+        updateSystemNotifications(for: profile)
     }
     
     // Hàm toggle
@@ -159,6 +209,9 @@ class SettingViewModel: ObservableObject {
         
         try? realm.write {
             liveItem.isEnabled = isEnabled
+        }
+        if let profile = userProfile {
+            updateSystemNotifications(for: profile)
         }
     }
     
@@ -182,6 +235,7 @@ class SettingViewModel: ObservableObject {
                     user.reminderSchedule.append(newItem)
                 }
             }
+            updateSystemNotifications(for: user)
         case .failure(let errorMessage):
             print("Lỗi: \(errorMessage)")
         }

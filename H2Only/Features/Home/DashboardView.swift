@@ -82,7 +82,7 @@ struct DashboardView: View {
                     
                     Spacer()
                     // Lịch sử
-                    HistoryList(viewModel: viewModel, onEdit: { selectedLog in
+                    HistoryList(viewModel: viewModel, userProfile: userProfiles.first , onEdit: { selectedLog in
                         self.selectedLog = selectedLog
                         self.showChangeHistory = true
                     })
@@ -276,6 +276,7 @@ struct WaterCircle : View {
 // Lịch sử uống nc
 struct HistoryList : View {
     @ObservedObject var viewModel : DashboardViewModel
+    var userProfile : UserProfile?
     var onEdit: (WaterLog) -> Void
     
     var body: some View {
@@ -285,7 +286,11 @@ struct HistoryList : View {
                 .padding(.horizontal)
                 .foregroundStyle(.black)
             VStack(spacing: 0) {
-                
+                if let user = userProfile {
+                    TimeHistoryRow(userProfile: user, cupSize: viewModel.currentCup?.amount ?? 100)
+                } else {
+                    TimeHistoryRow(userProfile: UserProfile(), cupSize: 100) // UserProfile() rỗng
+                }
                 // Danh sách đã uống (Lấy từ Realm)
                 ForEach(Array(viewModel.todayLogs.enumerated()), id: \.element.id) {index, log in
                     
@@ -378,6 +383,63 @@ struct HistoryRow: View {
         }
         .padding(.horizontal, 20)
         
+    }
+}
+
+// Dòng lịch sử
+struct TimeHistoryRow: View {
+    @ObservedRealmObject var userProfile: UserProfile
+    var cupSize : Int
+    var body: some View {
+        
+        TimelineView(.everyMinute){context in
+            VStack{
+                HStack(alignment: .top, spacing: 12){
+                    VStack(spacing: 0){
+                        Image("ic_next_time")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 25, height: 25)
+                        
+                        Image("line_graps")
+                            .resizable()
+                            .frame(width: 2)
+                    }.frame(width: 30)
+                    HStack{
+                        VStack{
+                            let activeReminders = userProfile.reminderSchedule.filter { $0.isEnabled }
+                            
+                            if userProfile.reminderSchedule.isEmpty || activeReminders.isEmpty {
+                                // ko có lịch hoặc disable hết
+                                Text("- - -")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(.black)
+                            } else {
+                                // có lịch
+                                let nextTime = SchedulerHelper.getNextNotification(list: userProfile.reminderSchedule)
+                                Text(nextTime, formatter: SchedulerHelper.timeFormatter)
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(.black)
+                            }
+                            
+                            Text("Lần tới")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.textSecondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Text("\(cupSize) ml")
+                            .foregroundColor(.textSecondary)
+                            .padding(.trailing, 28)
+                        
+                    }
+                    .frame(height: 30)
+                }
+            }
+            .padding(.horizontal, 20)
+            
+        }
     }
 }
 

@@ -7,6 +7,7 @@
 
 
 import Foundation
+import RealmSwift
 
 struct SchedulerHelper {
     
@@ -78,4 +79,52 @@ struct SchedulerHelper {
         
         return .success(reminders)
     }
+    
+    // Lấy giờ tiếp theo sẽ push notification
+    static func getNextNotification (list : List<ReminderItem>) -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        let currentTime = calendar.dateComponents([.hour, .minute], from: now)
+        guard let hour = currentTime.hour,
+              let minute = currentTime.minute else {
+            return Date()
+        }
+        
+        let totalMinute = hour * 60 + minute
+        
+        let sortedList = list.sorted{self.calcuTotalMinute(time: $0.time) < self.calcuTotalMinute(time: $1.time)}
+                                .filter{$0.isEnabled}
+        
+        for item in sortedList {
+            let itemMinute = self.calcuTotalMinute(time: item.time)
+            if itemMinute > totalMinute{
+                return item.time
+            }
+        }
+        return sortedList.first?.time ?? now
+        
+    }
+    
+    // Tính tổng phút
+    private static func calcuTotalMinute (time : Date) -> Int {
+        let calendar = Calendar.current
+        
+        let currentTime = calendar.dateComponents([.hour, .minute], from: time)
+        guard let hour = currentTime.hour,
+              let minute = currentTime.minute else {
+            return 0
+        }
+        
+        let totalMinute = hour * 60 + minute
+        return totalMinute
+    }
+    
+    // Format time
+    static var timeFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }
+
 }
