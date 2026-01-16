@@ -11,6 +11,8 @@ import RealmSwift
 struct DashboardView: View {
     @ObservedResults(WaterLog.self) var logs
     
+    @ObservedResults(UserProfile.self) var userProfiles
+    
     @StateObject var viewModel = DashboardViewModel()
     @State private var showChangeCupSheet = false
     @State private var showChangeHistory = false
@@ -18,6 +20,10 @@ struct DashboardView: View {
     @State private var selectedLog: WaterLog?
     
     @State var currentAdvice: String = "Không uống nước ngay sau khi ăn"
+    
+    var goal: Int {
+        return userProfiles.first?.dailyGoal ?? 2000
+    }
     
     var body: some View {
         VStack {
@@ -37,12 +43,12 @@ struct DashboardView: View {
                         ZStack {
                             
                             HalfCircleProgressView(
-                                progress: Double(viewModel.currentIntake) / Double(viewModel.dailyGoal)
+                                progress: Double(viewModel.currentIntake) / Double(goal)
                             )
                             .frame(width: 320, height: 320)
                             .offset(y: -80)
                             
-                            WaterCircle(viewModel: viewModel, currentAdvice: $currentAdvice, currentIntake: viewModel.currentIntake)
+                            WaterCircle(viewModel: viewModel, currentAdvice: $currentAdvice, currentIntake: viewModel.currentIntake, dailyGoal: goal)
                             
                             // Nút đổi dung tích
                             VStack {
@@ -126,6 +132,8 @@ struct WaterCircle : View {
     @Binding var currentAdvice: String
     var currentIntake: Int
     
+    var dailyGoal: Int
+    
     var selectedCup: Int {
         return viewModel.userProfile?.selectedCupSize ?? 0
     }
@@ -148,7 +156,7 @@ struct WaterCircle : View {
                         CountingText(value: Double(currentIntake), color: .blue, size: 20, weight: .medium)
                             .animation(.linear(duration: 0.5), value: viewModel.currentIntake)
                         
-                        Text("/\(viewModel.dailyGoal) ml")
+                        Text("/\(dailyGoal) ml")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(.gray)
                     }

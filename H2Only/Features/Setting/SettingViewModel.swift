@@ -14,21 +14,90 @@ enum ProfileTimeType {
 }
 
 class SettingViewModel: ObservableObject {
-    @Published var showEditPopup: Bool = false
+    // Popup
+    @Published var showEditPopup: Bool = false      // Popup Giờ
+    @Published var showGenderPopup: Bool = false    // Popup Giới tính
+    @Published var showWeightPopup: Bool = false    // Popup Cân nặng
+    @Published var showGoalPopup: Bool = false      // Popup Mục tiêu
+    
+    // Dữ liệu temp khi chỉnh sửa
     @Published var selectedTimeForEdit: Date = Date()
-    @Published var editingItem: ReminderItem? = nil // Nếu nil = Thêm mới, Có giá trị = Sửa
-    
-    // alert hỏi có tạo lại lịch k
+    @Published var tempGender: Gender = .male
+    @Published var tempWeight: Double = 60.0
+    @Published var tempGoal: Double = 2000.0
+
+    @Published var editingItem: ReminderItem? = nil
     @Published var showRescheduleAlert: Bool = false
-    
-    // loại tgian đang sửa: dậy, ngủ
     var currentEditingType: ProfileTimeType = .wakeUpTime
     
-    private var userProfile: UserProfile? {
+    var userProfile: UserProfile? {
         let realm = try? Realm()
         return realm?.objects(UserProfile.self).first
     }
     
+    var recommendedGoal: Double {
+        guard let user = userProfile else { return 2000 }
+        return Double(WaterCalculator.calculateDailyGoal(weightKg: user.weight, gender: user.gender))
+    }
+    
+    // MARK: Gender
+    func openGenderPopup() {
+        if let user = userProfile {
+            self.tempGender = user.gender
+            self.showGenderPopup = true
+        }
+    }
+    
+    func saveGender() {
+        guard let realm = try? Realm(), let user = userProfile, let liveUser = user.thaw() else { return }
+        try? realm.write {
+            liveUser.gender = tempGender
+            // Đổi giới tính , thì cập nhật lại goal
+            liveUser.dailyGoal = WaterCalculator.calculateDailyGoal(weightKg: liveUser.weight, gender: tempGender)
+        }
+        showGenderPopup = false
+    }
+    
+    
+    //MARK:  Cân nặng
+    func openWeightPopup() {
+        if let user = userProfile {
+            self.tempWeight = user.weight
+            self.showWeightPopup = true
+        }
+    }
+    
+    // Lưu Cân nặng
+    func saveWeight() {
+        guard let realm = try? Realm(), let user = userProfile, let liveUser = user.thaw() else { return }
+        try? realm.write {
+            liveUser.weight = tempWeight
+            // Đổi cân nặg thì cập nhật lại goal
+            liveUser.dailyGoal = WaterCalculator.calculateDailyGoal(weightKg: tempWeight, gender: liveUser.gender)
+        }
+        showWeightPopup = false
+    }
+    
+    
+    //MARK:  Mục tiêu uống nước
+    func openGoalPopup() {
+        if let user = userProfile {
+            self.tempGoal = Double(user.dailyGoal)
+            self.showGoalPopup = true
+        }
+    }
+    
+    // Lưu Goal
+    func saveGoal() {
+        guard let realm = try? Realm(), let user = userProfile, let liveUser = user.thaw() else { return }
+        try? realm.write {
+            liveUser.dailyGoal = Int(tempGoal)
+        }
+        showGoalPopup = false
+    }
+    
+    
+    // MARK: Cài đặt thời gian
     //  Cbi thêm
     func prepareAdd() {
         editingItem = nil
@@ -119,7 +188,7 @@ class SettingViewModel: ObservableObject {
     }
     
     
-    // Hàm mở popup cho setting
+    // MARK: Giờ dậy, giờ ngủ
     func openProfileTimePicker(type: ProfileTimeType, currentTime: Date?) {
         self.currentEditingType = type
         self.selectedTimeForEdit = currentTime ?? Date()

@@ -74,10 +74,7 @@ struct BasePopup<Content: View>: View {
             .frame(width: 320)
             .background(Color.white)
             .cornerRadius(16)
-            .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
-            .scaleEffect(isPresented ? 1 : 0.8) // Hiệu ứng nảy nhẹ khi hiện
             .opacity(isPresented ? 1 : 0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPresented)
         }
         .zIndex(100)
     }

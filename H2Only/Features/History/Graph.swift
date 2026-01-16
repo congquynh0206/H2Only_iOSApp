@@ -69,13 +69,6 @@ struct Graph: View {
                 if viewModel.selectedTab == 0 {
                     // Biểu đồ tháng
                     AxisMarks(position: .bottom, values: .stride(by: .day, count: 1)) { value in
-                        // Vẽ tick
-//                        AxisValueLabel(collisionResolution: .greedy) {
-//                            Rectangle()
-//                                .fill(Color.gray)
-//                                .frame(width: 1, height: 10)
-//                                .offset(y: -14) 
-//                        }
                         
                         AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
                             .foregroundStyle(Color.gray)
@@ -104,12 +97,7 @@ struct Graph: View {
                 } else {
                     // Biểu đồ năm
                     AxisMarks(values: .stride(by: .month, count: 1)) { value in
-//                        AxisValueLabel(collisionResolution: .greedy) {
-//                            Rectangle()
-//                                .fill(Color.gray)
-//                                .frame(width: 1, height: 10)
-//                                .offset(y: -14)
-//                      }
+                        
                         AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
                             .foregroundStyle(Color.gray)
                             .offset(y: -18.5)
