@@ -21,10 +21,10 @@ class UserProfile: Object, ObjectKeyIdentifiable {
     
     // Cài đặt Mục tiêu & Đơn vị
     @Persisted var dailyGoal: Int = 2000        // Mục tiêu mặc định (ml)
-    @Persisted var selectedCupSize: Int = 125   // Cái cốc đang chọn ở màn Home 
+    @Persisted var selectedCupSize: Int = 100   // Cái cốc đang chọn 
     
-    @Persisted var volumeUnit: VolumeUnit = .ml // Cài đặt hiển thị ml hay oz
-    @Persisted var weightUnit: WeightUnit = .kg // Cài đặt hiển thị kg hay lbs
+    @Persisted var volumeUnit: VolumeUnit = .ml
+    @Persisted var weightUnit: WeightUnit = .kg
     
     // Cài đặt Nhắc nhở
     @Persisted var isReminderEnabled: Bool = true
@@ -33,6 +33,8 @@ class UserProfile: Object, ObjectKeyIdentifiable {
     @Persisted var cups = List<Cup>()
     
     @Persisted var reminderSchedule = List<ReminderItem>()
+    
+    @Persisted var notificationSoundName: String = ""
 }
 
 class ReminderItem: EmbeddedObject, Identifiable {

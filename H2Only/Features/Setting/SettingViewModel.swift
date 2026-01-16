@@ -41,10 +41,10 @@ class SettingViewModel: ObservableObject {
     }
     
     // Cập nhật noti
-    private func updateSystemNotifications(for profile: UserProfile) {
+    func updateSystemNotifications(for profile: UserProfile) {
         let reminders = Array(profile.reminderSchedule)
-        NotificationManager.shared.scheduleNotifications(for: reminders)
-        print("Đã cập nhật hệ thống thông báo")
+        NotificationManager.shared.scheduleNotifications(for: reminders, soundName: profile.notificationSoundName)
+        print("Đã cập nhật thông báo")
     }
     
     // MARK: Gender
